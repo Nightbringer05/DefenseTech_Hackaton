@@ -1,0 +1,84 @@
+{
+  "sequences": [
+    {
+      "sequence": "seq_0001",
+      "split": "valid",
+      "width": 720,
+      "height": 1278,
+      "fps": 30,
+      "frame_count": 150,
+      "classes": [
+        "helicopter"
+      ],
+      "gt_boxes": 150
+    },
+    {
+      "sequence": "seq_0002",
+      "split": "valid",
+      "width": 352,
+      "height": 640,
+      "fps": 30,
+      "frame_count": 72,
+      "classes": [
+        "airplane"
+      ],
+      "gt_boxes": 72
+    },
+    {
+      "sequence": "seq_0003",
+      "split": "valid",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "frame_count": 150,
+      "classes": [
+        "drone_air"
+      ],
+      "gt_boxes": 150
+    },
+    {
+      "sequence": "seq_0004",
+      "split": "valid",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "frame_count": 150,
+      "classes": [
+        "drone_air"
+      ],
+      "gt_boxes": 150
+    },
+    {
+      "sequence": "seq_0005",
+      "split": "test",
+      "width": 1134,
+      "height": 1280,
+      "fps": 30,
+      "frame_count": 150
+    },
+    {
+      "sequence": "seq_0006",
+      "split": "test",
+      "width": 688,
+      "height": 848,
+      "fps": 30,
+      "frame_count": 82
+    },
+    {
+      "sequence": "seq_0007",
+      "split": "test",
+      "width": 720,
+      "height": 1110,
+      "fps": 30,
+      "frame_count": 150
+    },
+    {
+      "sequence": "seq_0008",
+      "split": "test",
+      "width": 352,
+      "height": 640,
+      "fps": 30,
+      "frame_count": 150
+    }
+  ]
+}

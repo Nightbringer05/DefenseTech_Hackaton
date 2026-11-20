@@ -1,0 +1,50 @@
+{
+  "challenge": "challenge-1-cuas-tracking",
+  "title": "Challenge 1: Low-Altitude C-UAS Detection & Multi-Object Tracking",
+  "hardware_target": "Axelera Embedded 110m (Metis AIPU, 1 GB LPDDR4x, 214 TOPS INT8)",
+  "recommended_model": "RFDETRNano (384x384 static ONNX opset 17)",
+  "classes": [
+    "drone_air",
+    "airplane",
+    "helicopter"
+  ],
+  "splits": {
+    "train": {
+      "images": 859,
+      "boxes": {
+        "drone_air": 592,
+        "helicopter": 106,
+        "airplane": 144
+      },
+      "images_with_class": {
+        "drone_air": 592,
+        "helicopter": 106,
+        "airplane": 144,
+        "negative": 48
+      },
+      "dedup_roots": 14
+    },
+    "valid": {
+      "images": 422,
+      "boxes": {
+        "drone_air": 276,
+        "airplane": 36,
+        "helicopter": 75
+      },
+      "images_with_class": {
+        "drone_air": 263,
+        "airplane": 36,
+        "helicopter": 75,
+        "negative": 48
+      },
+      "dedup_roots": 8
+    },
+    "test": {
+      "images": 328,
+      "dedup_roots": 7
+    }
+  },
+  "calibration_images": 200,
+  "tracking_eval_sequences": 8,
+  "leakage_verified": true
+}

@@ -1,0 +1,17 @@
+{
+  "format": "rfdetr",
+  "label_schema_hash": "4088c2641abf1e45",
+  "classes": [
+    "drone_air",
+    "airplane",
+    "helicopter"
+  ],
+  "image_count": 1609,
+  "split_counts": {
+    "train": 859,
+    "valid": 422,
+    "test": 328
+  },
+  "dropped_unknown": 0,
+  "split_seed": 202611
+}
