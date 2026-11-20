@@ -1,0 +1,50 @@
+{
+  "challenge": "challenge-4-edge-triage",
+  "description": "Sanitized VLM-to-edge triage distillation frames and multi-head teacher labels",
+  "scene_keys": [
+    "armored_vehicle",
+    "vehicle",
+    "person",
+    "drone",
+    "explosion_smoke",
+    "trench_building"
+  ],
+  "total_clips": 282,
+  "total_frames": 947,
+  "split_frame_counts": {
+    "train": 698,
+    "valid": 138,
+    "test": 111
+  },
+  "split_clip_counts": {
+    "train": 212,
+    "valid": 41,
+    "test": 29
+  },
+  "calibration_images": 200,
+  "split_stats": {
+    "train": {
+      "frames": 698,
+      "keep": 147,
+      "drop": 551,
+      "high_priority": 105,
+      "high_priority_rate": 0.1504,
+      "modalities": {
+        "night": 193,
+        "rgb": 505
+      }
+    },
+    "valid": {
+      "frames": 138,
+      "keep": 31,
+      "drop": 107,
+      "high_priority": 21,
+      "high_priority_rate": 0.1522,
+      "modalities": {
+        "night": 26,
+        "rgb": 111,
+        "thermal": 1
+      }
+    }
+  }
+}
