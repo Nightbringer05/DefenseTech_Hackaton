@@ -124,9 +124,10 @@ Each row has the challenge fields plus `source` (`mad` / `synthetic` / `challeng
 rotors, blades, RPM, BPF, flight mode, altitude, min range, SNR, background and seed. IDs:
 `mad_<video>_<n>_w<k>`, `madtest_…`, `syn_000001`.
 
-Spectrogram settings (`dronesynth/spectro.py`): n_fft 1024, hop 160, 64 Slaney mel bands, dB
-with top_db 80, flipped, bilinear to 224×224 grayscale; mean pixel correlation 0.979 with the
-provided train PNGs.
+Spectrograms (`dronesynth/spectro.py`) use the same pipeline as Adrien's
+`starter-kit/make_spectrogram.py`: first 80 000 samples, n_fft 1024, hop 256, 128 mel bands,
+50–8000 Hz, power_to_db(ref=max, top_db=80), flipped, bilinear 224×224, RGB. Identical to the
+provided challenge PNGs (max difference 1 grey level on one clip). Needs `librosa`.
 
 ### Downloads
 

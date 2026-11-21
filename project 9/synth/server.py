@@ -31,6 +31,7 @@ sys.path.insert(0, str(BASE))
 
 from dronesynth.dataset import CLASSES, DEFAULT_CONFIG, MAD_LABELS, build, estimate, merge_config, preview  # noqa: E402
 from dronesynth.propagate import acoular_available  # noqa: E402
+from dronesynth.drones import archetype_table  # noqa: E402
 
 OUT = BASE / "out"
 
@@ -79,9 +80,16 @@ def list_datasets() -> list[dict]:
                 continue
             samples = []
             lab = m.parent / "dataset" / "train" / "labels.jsonl"
+            meta_f = m.parent / "dataset" / "train" / "metadata.jsonl"
+            meta = {}
+            if meta_f.exists():
+                for line in meta_f.read_text().splitlines():
+                    x = json.loads(line)
+                    meta[x["id"]] = x
             seen = set()
             for line in lab.read_text().splitlines():
                 r = json.loads(line)
+                r.update({k: v for k, v in meta.get(r["id"], {}).items() if k != "id"})
                 key = (r.get("source") or ("synthetic" if r.get("synthetic") else "challenge"), r["sound_class"])
                 if key[0] != "challenge" and key not in seen:
                     seen.add(key)
@@ -162,6 +170,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/status":
             return self._json({"server": True, "acoular": acoular_available(), "classes": CLASSES, "mad_labels": MAD_LABELS,
                                "mad_counts": MAD_COUNTS, "mad_found": bool(MAD_COUNTS),
+                               "drone_types": archetype_table(),
                                "defaults": DEFAULT_CONFIG, "out_dir": str(OUT)})
         if path == "/api/jobs":
             with LOCK:

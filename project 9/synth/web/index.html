@@ -78,6 +78,7 @@ audio{width:100%}
 .maptable,.est{min-width:0;font-size:13px}
 .maptable td,.maptable th,.est td,.est th{padding:6px 8px}
 .maptable select{width:auto}
+.dtable td{white-space:nowrap;font-variant-numeric:tabular-nums}
 .est td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .est td small{color:var(--muted)}
 .tag-src{font-size:11px;color:var(--muted)}
@@ -201,18 +202,31 @@ svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
       </fieldset>
 
       <fieldset>
-        <legend>Drone</legend>
+        <legend>Drone airframes</legend>
+        <p class="hint">Each drone clip picks an airframe type by weight, then draws its mass, payload, rotor count, prop size and blades. Rotor speed comes from the thrust needed to carry that weight in the current air: heavier means faster props, bigger props mean lower tones. Hover values below are for a mid-size airframe at sea level and 15 °C.</p>
+        <div class="tablewrap"><table class="maptable dtable">
+          <thead><tr><th>Type</th><th>Weight</th><th>Mass</th><th>Max payload</th><th>Rotors × prop</th><th>Hover RPM</th><th>BPF</th><th>Tip Mach</th><th>Level</th><th>Speed / altitude</th></tr></thead>
+          <tbody id="dtBody"></tbody>
+        </table></div>
         <div class="grid3">
-          <div class="field"><label for="rotors">Rotor counts</label><input id="rotors" type="text" data-path="drone.rotors" data-type="list"><span class="hint">Sampled from this list. Repeat a value to weight it.</span></div>
-          <div class="field"><label for="blades">Blade counts</label><input id="blades" type="text" data-path="drone.blades" data-type="list"></div>
-          <div class="field"><span>RPM</span><div class="range"><input aria-label="RPM min" type="number" step="100" data-path="drone.rpm" data-idx="0"><i>to</i><input aria-label="RPM max" type="number" step="100" data-path="drone.rpm" data-idx="1"></div></div>
-          <div class="field"><span>RPM spread between rotors, %</span><div class="range"><input aria-label="spread min" type="number" step="0.1" data-path="drone.rpm_spread_pct" data-idx="0"><i>to</i><input aria-label="spread max" type="number" step="0.1" data-path="drone.rpm_spread_pct" data-idx="1"></div></div>
-          <div class="field"><span>Throttle jitter, %</span><div class="range"><input aria-label="jitter min" type="number" step="0.1" data-path="drone.rpm_jitter_pct" data-idx="0"><i>to</i><input aria-label="jitter max" type="number" step="0.1" data-path="drone.rpm_jitter_pct" data-idx="1"></div></div>
-          <div class="field"><span>Harmonics</span><div class="range"><input aria-label="harmonics min" type="number" data-path="drone.harmonics" data-idx="0"><i>to</i><input aria-label="harmonics max" type="number" data-path="drone.harmonics" data-idx="1"></div></div>
+          <div class="field"><span>Payload, share of max</span><div class="range"><input aria-label="payload min" type="number" min="0" max="1" step="0.05" data-path="drone.payload_frac" data-idx="0"><i>to</i><input aria-label="payload max" type="number" min="0" max="1" step="0.05" data-path="drone.payload_frac" data-idx="1"></div></div>
+          <div class="field"><span>Wind, m/s</span><div class="range"><input aria-label="wind min" type="number" min="0" step="1" data-path="drone.wind_mps" data-idx="0"><i>to</i><input aria-label="wind max" type="number" min="0" step="1" data-path="drone.wind_mps" data-idx="1"></div><span class="hint">Gust corrections wobble RPM, more for light drones.</span></div>
+          <div class="field"><span>Air temperature, °C</span><div class="range"><input aria-label="temperature min" type="number" step="1" data-path="drone.temperature_c" data-idx="0"><i>to</i><input aria-label="temperature max" type="number" step="1" data-path="drone.temperature_c" data-idx="1"></div></div>
+          <div class="field"><span>Site elevation, m</span><div class="range"><input aria-label="elevation min" type="number" step="100" data-path="drone.elevation_m" data-idx="0"><i>to</i><input aria-label="elevation max" type="number" step="100" data-path="drone.elevation_m" data-idx="1"></div><span class="hint">Thinner air needs faster rotors.</span></div>
+          <div class="field"><label for="manS">Steady flight weight</label><input id="manS" type="number" min="0" step="0.05" data-path="drone.manoeuvres.steady"></div>
+          <div class="field"><label for="manC">Climb weight</label><input id="manC" type="number" min="0" step="0.05" data-path="drone.manoeuvres.climb"></div>
+          <div class="field"><label for="manA">Aggressive manoeuvre weight</label><input id="manA" type="number" min="0" step="0.05" data-path="drone.manoeuvres.aggressive"><span class="hint">Punch-outs and throttle chops, as in FPV attacks.</span></div>
+        </div>
+        <label class="check"><input type="checkbox" id="fft" data-path="drone.flight_from_type" data-type="bool"> Use each type's own speed and altitude range (overrides the Flight ranges)</label>
+        <label class="check"><input type="checkbox" id="lfp" data-path="drone.level_from_physics" data-type="bool"> Louder airframes get a higher SNR at the same distance</label>
+        <details><summary>Sound detail</summary>
+        <div class="grid3" style="margin-top:10px">
+          <div class="field"><span>Harmonics (minimum)</span><div class="range"><input aria-label="harmonics min" type="number" data-path="drone.harmonics" data-idx="0"><i>to</i><input aria-label="harmonics max" type="number" data-path="drone.harmonics" data-idx="1"></div></div>
           <div class="field"><span>Hiss level</span><div class="range"><input aria-label="hiss min" type="number" step="0.05" data-path="drone.hiss" data-idx="0"><i>to</i><input aria-label="hiss max" type="number" step="0.05" data-path="drone.hiss" data-idx="1"></div></div>
           <div class="field"><span>Motor whine</span><div class="range"><input aria-label="whine min" type="number" step="0.05" data-path="drone.motor_whine" data-idx="0"><i>to</i><input aria-label="whine max" type="number" step="0.05" data-path="drone.motor_whine" data-idx="1"></div></div>
           <div class="field"><span>Harmonic roll-off</span><div class="range"><input aria-label="rolloff min" type="number" step="0.1" data-path="drone.harmonic_rolloff" data-idx="0"><i>to</i><input aria-label="rolloff max" type="number" step="0.1" data-path="drone.harmonic_rolloff" data-idx="1"></div></div>
         </div>
+        </details>
       </fieldset>
 
       <fieldset>
@@ -317,6 +331,16 @@ svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
   <p class="muted" style="margin-bottom:14px">Uses the same model as the generator: each rotor produces its blade-pass frequency plus harmonics, and broadband noise sits underneath. Flyby adds Doppler shift and 1/r loudness drop for a straight pass 30&nbsp;m overhead.</p>
   <div class="panel synth">
     <div class="controls">
+      <div class="ctl"><label for="airframe">Airframe</label>
+        <select id="airframe">
+          <option value="">Custom</option>
+          <option value="mini">Mini quad · 0.22 kg · 4″</option>
+          <option value="camera" selected>Camera quad · 1.0 kg · 8.5″</option>
+          <option value="fpv">FPV strike · 0.85 kg · 6″ 3-blade</option>
+          <option value="heavy">Heavy lift · 6.5 kg · 19.5″</option>
+          <option value="agri">Agri octo · 26 kg · 32″</option>
+        </select></div>
+      <div class="ctl"><label for="payload">Payload <output id="payloadO">0.0 kg</output></label><input id="payload" type="range" min="0" max="1" step="0.05" value="0"></div>
       <div class="ctl"><label for="rpm">Base RPM <output id="rpmO">5200</output></label><input id="rpm" type="range" min="2000" max="12000" step="50" value="5200"></div>
       <div class="ctl"><label for="sblades">Blades per rotor <output id="bladesO">2</output></label><input id="sblades" type="range" min="2" max="4" step="1" value="2"></div>
       <div class="ctl"><label for="srotors">Rotors <output id="rotorsO">4</output></label><input id="srotors" type="range" min="1" max="8" step="1" value="4"></div>
@@ -496,8 +520,9 @@ print(out.shape)   # (220500, 4)</pre>
     "mad":{"enabled":true,"mapping":{"0":"skip","1":"explosion","2":"ambient_outdoor","3":"explosion","4":"vehicle_mechanical","5":"vehicle_mechanical","6":"vehicle_mechanical"},
       "max_per_label":0,"windows_per_clip":1,"short_clips":"pad","test_split":true,"as_drone_background":true},
     "counts":{"drone_buzz":2000,"vehicle_mechanical":0,"explosion":600,"ambient_outdoor":0},
-    "drone":{"rotors":[4,4,4,6,8],"blades":[2,2,3],"rpm":[3000,9000],"rpm_spread_pct":[0.3,3.0],"rpm_jitter_pct":[0.5,4.0],
-      "harmonics":[6,14],"harmonic_rolloff":[0.6,1.4],"hiss":[0.05,0.5],"motor_whine":[0.0,0.4]},
+    "drone":{"types":{"mini":0.2,"camera":0.3,"fpv":0.25,"heavy":0.12,"agri":0.05,"fixed_wing":0.08},"payload_frac":[0.0,0.6],
+      "manoeuvres":{"steady":0.5,"climb":0.2,"aggressive":0.3},"wind_mps":[0,12],"temperature_c":[-10,35],"elevation_m":[0,1500],
+      "flight_from_type":true,"level_from_physics":true,"harmonics":[6,14],"harmonic_rolloff":[0.6,1.4],"hiss":[0.05,0.5],"motor_whine":[0.0,0.4]},
     "vehicle":{"engine_rpm":[700,3500]},
     "explosion":{"salvo_prob":0.6,"salvo_types":{"burst":0.5,"volley":0.25,"artillery":0.25},"burst_rpm":[500,950],"rounds":[3,30]},
     "flight":{"modes":{"flyby":0.6,"hover":0.25,"approach":0.15},"altitude_m":[10,120],"lateral_offset_m":[0,80],"speed_mps":[3,25]},
@@ -506,12 +531,33 @@ print(out.shape)   # (220500, 4)</pre>
     "include_real":true,"challenge_dir":".."};
   let MAD_LABELS = {"0":"communication","1":"shooting","2":"footsteps","3":"shelling","4":"vehicle","5":"helicopter","6":"fighter"};
   let MAD_COUNTS = {};
+  let DRONE_TYPES = [
+    {type:"mini",label:"Mini quad (<250 g)",mass_kg:[0.18,0.25],max_payload_kg:0.05,rotors:[4],prop_in:[3.5,4.7],blades:[2,3],speed_mps:[0,16],altitude_m:[5,120],rpm:11478,bpf_hz:383,tip_mach:0.18,level_db:-5.7},
+    {type:"camera",label:"Camera quad (Mavic class)",mass_kg:[0.7,1.4],max_payload_kg:0.3,rotors:[4],prop_in:[7.5,9.5],blades:[2],speed_mps:[0,21],altitude_m:[10,150],rpm:6221,bpf_hz:207,tip_mach:0.21,level_db:2.7},
+    {type:"fpv",label:"FPV racer / strike quad",mass_kg:[0.5,1.2],max_payload_kg:1.5,rotors:[4],prop_in:[5,7],blades:[3],speed_mps:[5,45],altitude_m:[2,60],rpm:9728,bpf_hz:486,tip_mach:0.23,level_db:3.1},
+    {type:"heavy",label:"Heavy lift (Matrice class)",mass_kg:[4,9],max_payload_kg:3,rotors:[4,6],prop_in:[17,22],blades:[2],speed_mps:[0,23],altitude_m:[15,200],rpm:2790,bpf_hz:93,tip_mach:0.21,level_db:11},
+    {type:"agri",label:"Agricultural hexa/octo",mass_kg:[18,35],max_payload_kg:30,rotors:[6,8],prop_in:[28,36],blades:[2],speed_mps:[0,10],altitude_m:[3,30],rpm:1708,bpf_hz:57,tip_mach:0.21,level_db:17.2},
+    {type:"fixed_wing",label:"Fixed-wing piston (one-way attack)",mass_kg:[150,220],max_payload_kg:50,rotors:[1],prop_in:[26,32],blades:[2],speed_mps:[40,55],altitude_m:[60,1000],rpm:6100,bpf_hz:203,tip_mach:0.69,level_db:18}];
+  const fmtR = r => r.length > 1 && r[0] !== r[r.length - 1] ? `${r[0]}–${r[r.length - 1]}` : `${r[0]}`;
+  function buildDroneTable() {
+    $('dtBody').innerHTML = DRONE_TYPES.map(d => `<tr>
+      <td>${d.label}</td>
+      <td><input type="number" min="0" step="0.05" style="width:70px" aria-label="Weight for ${d.label}" id="dt_${d.type}" data-path="drone.types.${d.type}"></td>
+      <td>${fmtR(d.mass_kg)} kg</td><td>${d.max_payload_kg} kg</td>
+      <td>${d.rotors.join('/')} × ${fmtR(d.prop_in)}″ ${d.blades.join('/')}-blade</td>
+      <td>${d.rpm.toLocaleString()}</td><td>${d.bpf_hz} Hz</td><td>${d.tip_mach}</td>
+      <td>${d.level_db > 0 ? '+' : ''}${d.level_db} dB</td><td>${fmtR(d.speed_mps)} m/s · ${fmtR(d.altitude_m)} m</td></tr>`).join('');
+  }
 
   const PRESETS = {
     "Quick test": {name:"quick_test", mad:{max_per_label:20, test_split:false}, counts:{drone_buzz:60, vehicle_mechanical:0, explosion:20, ambient_outdoor:0}},
     "MAD full + drones + salvos": {name:"mad_full", counts:{drone_buzz:2000, vehicle_mechanical:0, explosion:600, ambient_outdoor:0}},
     "MAD balanced": {name:"mad_balanced", mad:{max_per_label:600}, counts:{drone_buzz:1800, vehicle_mechanical:0, explosion:300, ambient_outdoor:300}},
     "MAD ×2 windows": {name:"mad_x2", mad:{windows_per_clip:2}, counts:{drone_buzz:4000, vehicle_mechanical:0, explosion:800, ambient_outdoor:500}},
+    "FPV strike drones": {name:"fpv_strike", mad:{max_per_label:200}, counts:{drone_buzz:1500, vehicle_mechanical:0, explosion:300, ambient_outdoor:0},
+      drone:{types:{fpv:1}, payload_frac:[0.3,1.0], manoeuvres:{steady:0.2, climb:0.2, aggressive:0.6}}},
+    "Heavy and fixed-wing": {name:"heavy_fw", mad:{max_per_label:200}, counts:{drone_buzz:1500, vehicle_mechanical:0, explosion:0, ambient_outdoor:0},
+      drone:{types:{heavy:0.4, agri:0.2, fixed_wing:0.4}, payload_frac:[0.2,1.0]}},
     "Salvos only": {name:"salvos", mad:{enabled:false}, include_real:false, counts:{drone_buzz:0, vehicle_mechanical:0, explosion:500, ambient_outdoor:0}, explosion:{salvo_prob:1.0}},
     "Synthetic only": {name:"synth_only", mad:{enabled:false}, counts:{drone_buzz:800, vehicle_mechanical:600, explosion:300, ambient_outdoor:300}},
     "Far and faint": {name:"far_faint", counts:{drone_buzz:1000, vehicle_mechanical:400, explosion:200, ambient_outdoor:400},
@@ -523,7 +569,7 @@ print(out.shape)   # (220500, 4)</pre>
   const setP = (o, path, v) => { const ks = path.split('.'); const last = ks.pop(); ks.reduce((a, k) => a[k] ??= {}, o)[last] = v; };
   function deepMerge(dst, src) {
     for (const [k, v] of Object.entries(src || {})) {
-      if (v && typeof v === 'object' && !Array.isArray(v) && typeof dst[k] === 'object' && !['counts', 'modes', 'salvo_types'].includes(k)) deepMerge(dst[k], v);
+      if (v && typeof v === 'object' && !Array.isArray(v) && typeof dst[k] === 'object' && !['counts', 'modes', 'salvo_types', 'types', 'manoeuvres'].includes(k)) deepMerge(dst[k], v);
       else dst[k] = clone(v);
     }
     return dst;
@@ -533,6 +579,7 @@ print(out.shape)   # (220500, 4)</pre>
   let fields = [];
   const CLS_OPTS = ['skip', 'drone_buzz', 'vehicle_mechanical', 'explosion', 'ambient_outdoor'];
   function buildMapTable() {
+    buildDroneTable();
     $('mapBody').innerHTML = Object.entries(MAD_LABELS).map(([id, name]) => {
       const c = MAD_COUNTS[id] || {};
       return `<tr><td>${id} · ${name}</td><td>${c.training ?? '–'}</td><td>${c.test ?? '–'}</td>
@@ -705,6 +752,7 @@ print(out.shape)   # (220500, 4)</pre>
       const s = await api('/api/status');
       server = true; DEFAULTS = s.defaults; cfg = clone(DEFAULTS);
       MAD_LABELS = s.mad_labels || MAD_LABELS; MAD_COUNTS = s.mad_counts || {};
+      DRONE_TYPES = s.drone_types || DRONE_TYPES;
       buildMapTable();
       if (!s.mad_found) $('estHint').textContent = 'MAD_dataset/ was not found next to synth/. Only synthetic clips can be generated.';
       $('status').textContent = `Local server connected · acoular ${s.acoular ? 'available' : 'not installed (numpy engine only)'}`;
@@ -796,7 +844,27 @@ print(out.shape)   # (220500, 4)</pre>
     flyStart = ctx.currentTime; $('fly').setAttribute('aria-pressed', 'true');
   });
   ['rpm', 'sblades', 'srotors', 'spread', 'jitter', 'hiss', 'speed'].forEach(id => $(id).addEventListener('input', () => { readouts(); retune(); }));
-  readouts();
+  // Airframe presets: hover RPM from thrust = weight, n = sqrt(T / (Ct * rho * D^4)), sea level 15 °C.
+  const AF = { mini: {m: 0.22, pmax: 0.05, D: 4.0, ct: 0.10, rotors: 4, blades: 2},
+               camera: {m: 1.0, pmax: 0.3, D: 8.5, ct: 0.09, rotors: 4, blades: 2},
+               fpv: {m: 0.85, pmax: 1.5, D: 6.0, ct: 0.12, rotors: 4, blades: 3},
+               heavy: {m: 6.5, pmax: 3.0, D: 19.5, ct: 0.10, rotors: 6, blades: 2},
+               agri: {m: 26, pmax: 30, D: 32, ct: 0.10, rotors: 8, blades: 2} };
+  function applyAirframe() {
+    const a = AF[$('airframe').value];
+    $('payload').disabled = !a;
+    if (!a) { $('payloadO').textContent = '—'; return; }
+    const pay = a.pmax * +$('payload').value, T = (a.m + pay) * 9.81 / a.rotors, Dm = a.D * 0.0254;
+    const rpm = Math.round(Math.sqrt(T / (a.ct * 1.225 * Dm ** 4)) * 60 / 50) * 50;
+    $('payloadO').textContent = pay.toFixed(pay < 1 ? 2 : 1) + ' kg';
+    $('rpm').value = Math.min(12000, Math.max(+$('rpm').min, rpm)); $('srotors').value = a.rotors; $('sblades').value = a.blades;
+    readouts(); retune();
+  }
+  $('airframe').addEventListener('change', applyAirframe);
+  $('payload').addEventListener('input', applyAirframe);
+  $('rpm').addEventListener('input', () => { $('airframe').value = ''; $('payload').disabled = true; $('payloadO').textContent = '—'; });
+  $('rpm').min = 1200;
+  readouts(); applyAirframe();
 
   function flyState() {
     if (flyStart === null) return null;

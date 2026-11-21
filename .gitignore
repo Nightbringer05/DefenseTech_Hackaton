@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+
+# Local datasets (too large for git)
+MAD_dataset/
+
+# Project 9 local outputs
+project 9/starter-kit/runs/
+project 9/starter-kit/ac_preds_*.jsonl
+project 9/starter-kit/kfold_cv.py
+project 9/starter-kit/uv.lock

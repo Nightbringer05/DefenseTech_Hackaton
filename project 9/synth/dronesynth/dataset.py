@@ -31,7 +31,7 @@ import numpy as np
 import soundfile as sf
 from scipy.signal import resample_poly
 
-from . import sources
+from . import drones, sources
 from .propagate import PAD_S, acoular_available, propagate, sample_trajectory
 from .spectro import spectrogram_image
 
@@ -63,11 +63,15 @@ DEFAULT_CONFIG = {
     },
     "counts": {"drone_buzz": 2000, "vehicle_mechanical": 0, "explosion": 600, "ambient_outdoor": 0},
     "drone": {
-        "rotors": [4, 4, 4, 6, 8],    # sampled uniformly from this list (repeat to weight)
-        "blades": [2, 2, 3],
-        "rpm": [3000, 9000],
-        "rpm_spread_pct": [0.3, 3.0],
-        "rpm_jitter_pct": [0.5, 4.0],
+        # airframe archetypes (see dronesynth/drones.py) and their sampling weights
+        "types": {"mini": 0.2, "camera": 0.3, "fpv": 0.25, "heavy": 0.12, "agri": 0.05, "fixed_wing": 0.08},
+        "payload_frac": [0.0, 0.6],    # share of the archetype's max payload
+        "manoeuvres": {"steady": 0.5, "climb": 0.2, "aggressive": 0.3},
+        "wind_mps": [0, 12],
+        "temperature_c": [-10, 35],
+        "elevation_m": [0, 1500],      # site elevation -> air density
+        "flight_from_type": True,      # use each archetype's speed/altitude envelope
+        "level_from_physics": True,    # louder airframes get higher SNR at the same range
         "harmonics": [6, 14],
         "harmonic_rolloff": [0.6, 1.4],
         "hiss": [0.05, 0.5],
@@ -105,7 +109,7 @@ def merge_config(user: dict | None) -> dict:
 
     def rec(dst, src):
         for k, v in (src or {}).items():
-            if isinstance(v, dict) and isinstance(dst.get(k), dict) and k not in ("modes", "counts", "mapping", "salvo_types"):
+            if isinstance(v, dict) and isinstance(dst.get(k), dict) and k not in ("modes", "counts", "mapping", "salvo_types", "types", "manoeuvres"):
                 rec(dst[k], v)
             elif isinstance(v, dict) and k == "mapping":
                 dst[k] = {**dst.get(k, {}), **v}
@@ -231,8 +235,8 @@ def make_clip(cfg: dict, kind: str, seed: int, pools: dict[str, list[str]]):
 
     n_src = n + int(PAD_S * sr)
     if kind == "drone_buzz":
-        src, sp = sources.drone(rng, n_src, sr, cfg["drone"])
-    elif kind == "vehicle_mechanical":
+        return _drone_clip(cfg, rng, bg, n, n_src, params)
+    if kind == "vehicle_mechanical":
         src, sp = sources.vehicle(rng, n_src, sr, cfg["vehicle"])
     elif rng.random() < cfg["explosion"]["salvo_prob"]:
         src, sp = sources.salvo(rng, n, sr, cfg)
@@ -259,6 +263,40 @@ def make_clip(cfg: dict, kind: str, seed: int, pools: dict[str, list[str]]):
         sig = sig / _rms(sig)
     params["snr_db"] = round(float(snr), 1)
     y = bg + sig * 10 ** (snr / 20)
+    return _finish(rng, y, mix), params
+
+
+def _drone_clip(cfg, rng, bg, n, n_src, params):
+    sr, dc, mix = cfg["sample_rate"], cfg["drone"], cfg["mix"]
+    temp = float(rng.uniform(*dc["temperature_c"]))
+    elev = float(rng.uniform(*dc["elevation_m"]))
+    spec = drones.sample_spec(rng, dc, temp, elev)
+    man_w = {k: float(v) for k, v in dc["manoeuvres"].items() if float(v) > 0} or {"steady": 1.0}
+    names = list(man_w)
+    pw = np.array([man_w[k] for k in names])
+    manoeuvre = names[int(rng.choice(len(names), p=pw / pw.sum()))]
+    if spec["type"] == "fixed_wing":
+        manoeuvre = "cruise"
+    flight = copy.deepcopy(cfg["flight"])
+    if dc["flight_from_type"]:
+        flight["speed_mps"] = spec["speed_range"]
+        flight["altitude_m"] = spec["altitude_range"]
+        if spec["type"] == "fixed_wing":
+            flight["modes"] = {"flyby": 0.7, "approach": 0.3}
+    vz = float(rng.uniform(1, 5)) if manoeuvre == "climb" else 0.0
+    _, pos, fp = sample_trajectory(rng, cfg["duration_s"], flight, vz=vz)
+    wind = float(rng.uniform(*dc["wind_mps"]))
+    src, sp = drones.render(rng, n_src, sr, dc, spec, fp["speed_mps"], manoeuvre, wind)
+    params.update(fp)
+    params.update(sp)
+    sig = propagate(src, sr, n, pos, cfg["engine"], c=spec["c"])
+    params["engine"] = cfg["engine"] if (cfg["engine"] != "acoular" or acoular_available()) else "numpy"
+    snr = rng.uniform(*mix["snr_db_at_30m"]) - 20 * np.log10(max(fp["min_range_m"], 1) / 30.0)
+    if dc["level_from_physics"]:
+        snr += sp["level_db"]
+    snr = float(np.clip(snr, *mix["snr_clip_db"]))
+    params["snr_db"] = round(snr, 1)
+    y = bg + sig / _rms(sig) * 10 ** (snr / 20)
     return _finish(rng, y, mix), params
 
 
@@ -346,12 +384,14 @@ def _mad_jobs(cfg, base: Path, split_csv: str, out_split: str, seed0: int, cap: 
     jobs = []
     for label in sorted(by_label):
         items = by_label[label]
+        for r in items:
+            r["frames"] = sf.info(r["path"]).frames
+        if cfg["mad"]["short_clips"] == "skip":  # filter before capping so the cap is met
+            items = [r for r in items if r["frames"] >= n]
         if cap and len(items) > cap:
             items = [items[i] for i in sorted(rng.choice(len(items), cap, replace=False))]
         for r in items:
-            frames = sf.info(r["path"]).frames
-            if frames < n and cfg["mad"]["short_clips"] == "skip":
-                continue
+            frames = r["frames"]
             nw = 1 if frames < n else max(1, min(want, frames // n))
             stem = r["rel"].replace("/", "_").replace("training_", "").replace("test_", "").rsplit(".", 1)[0]
             for k in range(nw):
@@ -398,6 +438,27 @@ def _copy_real(cfg, base: Path, root: Path, split: str) -> list[dict]:
         r["source"] = "challenge"
         rows.append(r)
     return rows
+
+
+LABEL_FIELDS = ("id", "split", "audio", "video", "spectrogram", "has_drone_audio", "sound_class")
+
+
+def write_labels(split_dir: Path, rows: list[dict]) -> None:
+    """labels.jsonl (challenge schema), labels.csv (same columns), metadata.jsonl (everything)."""
+    split_dir.mkdir(parents=True, exist_ok=True)
+    with (split_dir / "labels.jsonl").open("w") as fh:
+        for r in rows:
+            fh.write(json.dumps({k: r.get(k) for k in LABEL_FIELDS}) + "\n")
+    with (split_dir / "labels.csv").open("w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(LABEL_FIELDS)
+        for r in rows:
+            w.writerow(["" if r.get(k) is None else str(r[k]).lower() if isinstance(r[k], bool) else r[k]
+                        for k in LABEL_FIELDS])
+    with (split_dir / "metadata.jsonl").open("w") as fh:
+        for r in rows:
+            fh.write(json.dumps({"id": r["id"], "source": r.get("source"), "synthetic": r.get("synthetic"),
+                                 "params": r.get("params", {})}) + "\n")
 
 
 def estimate(cfg: dict, base: Path) -> dict:
@@ -456,9 +517,7 @@ def build(cfg: dict, out_dir: Path, base: Path, progress=None) -> dict:
     for r in rows:
         by_split[r["split"]].append(r)
     for s, rs in by_split.items():
-        with (root / "dataset" / s / "labels.jsonl").open("w") as fh:
-            for r in rs:
-                fh.write(json.dumps(r) + "\n")
+        write_labels(root / "dataset" / s, rs)
 
     def tally(rs):
         t = {c: 0 for c in CLASSES}

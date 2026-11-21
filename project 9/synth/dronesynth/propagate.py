@@ -24,7 +24,7 @@ def acoular_available() -> bool:
         return False
 
 
-def sample_trajectory(rng, dur, cfg):
+def sample_trajectory(rng, dur, cfg, vz=0.0):
     """Return (mode, fn(t)->(N,3) positions, params). t covers [0, dur + PAD_S]."""
     mode = str(rng.choice(list(cfg["modes"].keys()), p=_probs(cfg["modes"])))
     alt = rng.uniform(*cfg["altitude_m"])
@@ -50,9 +50,12 @@ def sample_trajectory(rng, dur, cfg):
     wob = rng.uniform(0.2, 1.5) if mode == "hover" else 0.0
     ph = rng.uniform(0, 6.28, 3)
 
+    vel = vel + np.array([0.0, 0.0, vz])
+
     def pos(t):
         t = np.asarray(t, float)[:, None]
         p = p0[None, :] + vel[None, :] * t
+        p[:, 2] = np.maximum(p[:, 2], 1.0)
         if wob:
             p = p + wob * np.sin(2 * np.pi * np.array([0.3, 0.23, 0.17]) * t + ph)
         return p
@@ -73,13 +76,13 @@ def _air_absorption(y, sr, r_mean):
     return sps.sosfilt(sos, y)
 
 
-def propagate(src, sr, n_out, pos, engine="numpy"):
+def propagate(src, sr, n_out, pos, engine="numpy", c=C):
     """src: source signal of length n_out + PAD_S*sr. Returns mic signal of length n_out."""
     pad = int(PAD_S * sr)
     if engine == "acoular" and acoular_available():
-        y = _acoular(src, sr, pos)
+        y = _acoular(src, sr, pos, c)
     else:
-        y = _numpy(src, sr, pos)
+        y = _numpy(src, sr, pos, c)
     y = y[pad : pad + n_out]
     if len(y) < n_out:
         y = np.pad(y, (0, n_out - len(y)))
@@ -87,18 +90,18 @@ def propagate(src, sr, n_out, pos, engine="numpy"):
     return _air_absorption(y, sr, float(r.mean()))
 
 
-def _numpy(src, sr, pos):
+def _numpy(src, sr, pos, c=C):
     n = len(src)
     t = np.arange(n) / sr
-    te = t - np.linalg.norm(pos(t), axis=1) / C
+    te = t - np.linalg.norm(pos(t), axis=1) / c
     for _ in range(3):  # fixed-point solve t = te + r(te)/c
-        te = t - np.linalg.norm(pos(te), axis=1) / C
+        te = t - np.linalg.norm(pos(te), axis=1) / c
     r = np.linalg.norm(pos(te), axis=1)
     y = np.interp(te * sr, np.arange(n), src, left=0.0, right=0.0)
     return y / np.maximum(r, 1.0)
 
 
-def _acoular(src, sr, pos):
+def _acoular(src, sr, pos, c=C):
     import os
     os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
     with warnings.catch_warnings():
@@ -111,6 +114,10 @@ def _acoular(src, sr, pos):
     mics = ac.MicGeom(pos_total=np.zeros((3, 1)))
     gen = ac.GenericSignalGenerator(source=ac.TimeSamples(data=src[:, None].astype(np.float64), sample_freq=sr))
     mps = ac.MovingPointSource(signal=gen, mics=mics, trajectory=traj, conv_amp=True)
+    try:
+        mps.env = ac.Environment(c=float(c))
+    except Exception:
+        pass
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         y = np.concatenate(list(mps.result(4096)))[:, 0]
