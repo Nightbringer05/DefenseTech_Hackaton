@@ -4,6 +4,50 @@ Goal: train on the challenge data (C5, 62 clips) and the MAD Military Audio Data
 (Kaggle `junewookim/mad-dataset-military-audio-dataset`, 7 466 clips) without the model
 learning "which dataset is this" instead of "what sound is this".
 
+## Quick start: generate the synthetic training set
+
+```bash
+git pull
+cd project_9/WorkSpace/harmonize
+pip install numpy pillow          # ffmpeg optional (only for MP3/FLAC drone files)
+python generate_synthetic_dataset.py --download \
+    --real-drone-dir /path/to/your/drone/recordings \
+    --extra-bg /path/to/your/ambience=ambient
+```
+
+- `--download` fetches MAD (~1.1 GB, Kaggle) and ESC-50 (~600 MB, GitHub) once, into `WorkSpace/`.
+- `--real-drone-dir`: any length or format. Short clips are looped to 5 s. Repeatable.
+  If each sub-folder is one recording session, add `--real-drone-group dir` so a session never
+  ends up in both train and valid.
+- `--extra-bg DIR=CATEGORY`: your own backgrounds. CATEGORY is one of `ambient`, `vehicle`,
+  `tonal_neg`, `explosion`, `speech`. Repeatable.
+- Default size: 1,500 train + 250 valid per class (7,000 images, ~290 MB). About 1 min on 10 cores.
+
+Output: `WorkSpace/datasets/synth_c5/`, laid out like `InputData/`. Train on it with the starter kit:
+
+```bash
+cd ../../InputData/starter-kit
+uv run --with onnx --with onnxscript --with onnxruntime --with scipy python train_audio_cnn_axelera.py \
+    --challenge-dir ../../WorkSpace/datasets/synth_c5 --calibration-dir ../calibration_spectrograms \
+    --epochs 12 --output-dir runs/synth
+```
+
+**Before training, check the two files the script writes:**
+- `audit.json` (also printed at the end): `P(drone)` must be ~0.25 for every background
+  category and the same with or without distractor. The script prints `OK` or `WARNING`.
+- `preview.png`: synthetic drones next to the challenge's real drones. They should look alike
+  (mostly faint lines in noise), not bright clean ladders.
+
+### Why this dataset has no shortcuts
+
+| Rule | How |
+|---|---|
+| The drone is the only difference between classes | Each drone clip is a copy of a negative clip from the same background category, with a drone added; every category gets exactly P(drone) = 0.25 |
+| A tonal line alone is not "drone" | Non-drone tones (sine, mains hum, low engine, helicopter thump, siren, whine) added to 25 % of *all* clips, at the same loudness range as drones |
+| Real-world difficulty | Drone SNR −10…+10 dB, 30 % only partly present, fly-by Doppler, distance low-pass, small RPM drift, rotor noise |
+| Same channel as the challenge | Challenge-train low-pass cutoffs and loudness, exact challenge spectrogram recipe |
+| No leakage | Train/valid split by source recording before mixing; challenge valid/test never read |
+
 ## Two-stage training plan
 
 | Stage | Data | Folder | Used for model selection |

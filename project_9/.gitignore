@@ -2,6 +2,7 @@
 WorkSpace/*.zip
 WorkSpace/mad-dataset/
 WorkSpace/datasets/
+WorkSpace/sources/
 
 # Training outputs
 **/runs/
