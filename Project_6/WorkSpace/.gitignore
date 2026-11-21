@@ -1,0 +1,5 @@
+# Generated or downloaded data: rebuilt by the scripts in data_tools/, never pushed
+extra_data/
+dataset_plus*/
+_downloads/
+__pycache__/
