@@ -2,6 +2,7 @@
   "_label": "Drone vs no-drone 200",
   "_description": "100 synthetic drones over MAD noise + 100 MAD noise clips. No helicopters, no speech, no challenge backgrounds.",
   "name": "drone_vs_nodrone_200",
+  "comment": "Binary drone / no-drone baseline: 100 synthetic drones (physics model) over MAD noise, 100 MAD noise clips. Helicopters and speech excluded.",
   "seed": 200,
   "counts": {
     "drone_buzz": 100,

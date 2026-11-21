@@ -28,6 +28,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", type=Path, help="JSON config (merged over defaults)")
     ap.add_argument("--name")
+    ap.add_argument("--comment", help="free-text note saved in manifest.json and README.md")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--engine", choices=("numpy", "acoular"))
     ap.add_argument("--format", dest="audio_format", choices=("flac", "wav"), help="audio file format (default flac)")
@@ -47,7 +48,7 @@ def main() -> None:
     user = json.loads(a.config.read_text()) if a.config else {}
     user = {k: v for k, v in user.items() if not k.startswith("_")}
     cfg = merge_config(user)
-    for key in ("name", "seed", "engine", "workers", "audio_format"):
+    for key in ("name", "comment", "seed", "engine", "workers", "audio_format"):
         if getattr(a, key) is not None:
             cfg[key] = getattr(a, key)
     for flag, cls in (("drone", "drone_buzz"), ("vehicle", "vehicle_mechanical"),

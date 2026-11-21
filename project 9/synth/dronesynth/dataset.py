@@ -46,6 +46,7 @@ DEFAULT_MAD_MAPPING = {"0": "skip",                # speech; the challenge scree
 
 DEFAULT_CONFIG = {
     "name": "mad_drones_v1",
+    "comment": "",               # free text: purpose, changes, who made it; saved with the dataset
     "seed": 0,
     "sample_rate": 16000,
     "duration_s": 5.0,
@@ -526,7 +527,8 @@ def build(cfg: dict, out_dir: Path, base: Path, progress=None) -> dict:
         return t
 
     manifest = {
-        "name": name, "created": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "name": name, "comment": str(cfg.get("comment", "")).strip(),
+        "created": time.strftime("%Y-%m-%d %H:%M:%S"),
         "seconds": round(time.time() - t0, 1),
         "synthetic_clips": sum(r["synthetic"] for r in rows),
         "mad_clips": sum(r["source"] == "mad" for r in rows),
@@ -537,7 +539,25 @@ def build(cfg: dict, out_dir: Path, base: Path, progress=None) -> dict:
         "audio_format": _ext(cfg), "config": cfg,
     }
     (root / "manifest.json").write_text(json.dumps(manifest, indent=2))
+    _write_readme(root, manifest)
     return manifest
+
+
+def _write_readme(root: Path, m: dict) -> None:
+    """Human-readable summary next to the data, so the comment travels with the zip."""
+    lines = [f"# {m['name']}", ""]
+    if m["comment"]:
+        lines += [m["comment"], ""]
+    lines += [f"Created {m['created']} in {m['seconds']} s. Audio: {m['audio_format'].upper()}, 16 kHz mono, 5 s.",
+              f"Sources: {m['mad_clips']} MAD, {m['synthetic_clips']} synthetic, {m['real_train_clips']} challenge train.",
+              "", "| split | total | drone_buzz | vehicle_mechanical | explosion | ambient_outdoor |",
+              "|---|---|---|---|---|---|"]
+    for s, v in m["splits"].items():
+        c = v["classes"]
+        lines.append(f"| {s} | {v['total']} | {c['drone_buzz']} | {c['vehicle_mechanical']} | {c['explosion']} | {c['ambient_outdoor']} |")
+    lines += ["", "Labels: dataset/<split>/labels.jsonl (challenge schema), labels.csv, metadata.jsonl.",
+              "Full generator settings: manifest.json -> config.", ""]
+    (root / "README.md").write_text("\n".join(lines))
 
 
 def preview(cfg: dict, kind: str, base: Path, seed: int | None = None, source: str = "synthetic"):

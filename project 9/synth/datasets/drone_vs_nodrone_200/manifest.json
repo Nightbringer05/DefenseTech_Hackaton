@@ -1,7 +1,8 @@
 {
   "name": "drone_vs_nodrone_200",
-  "created": "2026-11-21 15:08:23",
-  "seconds": 4.2,
+  "comment": "Binary drone / no-drone baseline: 100 synthetic drones (physics model) over MAD noise, 100 MAD noise clips. Helicopters and speech excluded.",
+  "created": "2026-11-21 16:20:24",
+  "seconds": 4.9,
   "synthetic_clips": 100,
   "mad_clips": 100,
   "real_train_clips": 0,
@@ -39,6 +40,7 @@
   "audio_format": "flac",
   "config": {
     "name": "drone_vs_nodrone_200",
+    "comment": "Binary drone / no-drone baseline: 100 synthetic drones (physics model) over MAD noise, 100 MAD noise clips. Helicopters and speech excluded.",
     "seed": 200,
     "sample_rate": 16000,
     "duration_s": 5.0,

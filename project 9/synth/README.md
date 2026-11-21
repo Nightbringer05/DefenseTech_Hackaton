@@ -62,6 +62,10 @@ To make it (or a variant) in the page:
 3. Adjust drone types, payload, wind, SNR and so on, check **Dataset contents**, click
    **Generate dataset**, then **Download dataset (.zip)**.
 
+Each dataset has a free-text **comment** (Comment box in the page, `--comment` on the CLI,
+`comment` in a preset). It is saved in `manifest.json` and in a generated `README.md` inside the
+dataset folder (so it travels with the zip), and shown in the dataset list.
+
 The browser run and `python generate.py --config presets/drone_vs_nodrone_200.json` produce
 byte-identical files. Any `presets/*.json` (with optional `_label` / `_description`) appears as a
 preset button.
