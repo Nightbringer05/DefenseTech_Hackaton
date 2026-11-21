@@ -1,4 +1,10 @@
-"""Train a lightweight 2D Log-Mel Spectrogram CNN for Challenge 5 and export static ONNX."""
+"""Train a lightweight 2D Log-Mel Spectrogram CNN for Challenge 5 and export static ONNX.
+
+Two-stage option:
+  Stage 1 (--wake-only): backbone + wake head only, class loss disabled.
+  Stage 2 (--init-checkpoint <stage1 .pt>): reload stage-1 weights, train wake + 4-class heads,
+          backbone LR scaled by --backbone-lr-mult.
+"""
 
 from __future__ import annotations
 
@@ -108,6 +114,21 @@ class AcousticWakeCNN(nn.Module):
         return self.head_wake(feat).squeeze(-1), self.head_class(feat)
 
 
+def load_init_checkpoint(model: nn.Module, path: Path, device: torch.device) -> None:
+    """Load every tensor whose name and shape match; mismatching ones keep their fresh init."""
+    state = torch.load(path, map_location=device, weights_only=True)
+    own = model.state_dict()
+    compatible = {k: v for k, v in state.items() if k in own and v.shape == own[k].shape}
+    if not compatible:
+        raise ValueError(f"No compatible tensor in {path} (wrong --arch?)")
+    model.load_state_dict(compatible, strict=False)
+    skipped = sorted(set(own) - set(compatible))
+    print(
+        f"Loaded {len(compatible)}/{len(own)} tensors from {path}; "
+        f"re-initialised: {skipped[:6]}{' ...' if len(skipped) > 6 else ''}"
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--challenge-dir", type=Path, required=True)
@@ -127,6 +148,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=Path("runs/audio_cnn"))
     parser.add_argument(
         "--calibration-dir", type=Path, default=Path("../calibration_spectrograms")
+    )
+    # --- two-stage training ---
+    parser.add_argument(
+        "--wake-only",
+        action="store_true",
+        help="Stage 1: train backbone + wake head only (class loss disabled).",
+    )
+    parser.add_argument(
+        "--init-checkpoint",
+        type=Path,
+        default=None,
+        help="Stage 2: state_dict .pt to start from (tensors with matching shapes only).",
+    )
+    parser.add_argument(
+        "--backbone-lr-mult",
+        type=float,
+        default=1.0,
+        help="Backbone LR = lr * mult (e.g. 0.1 in stage 2 to preserve stage-1 features).",
+    )
+    parser.add_argument(
+        "--class-loss-weight",
+        type=float,
+        default=0.5,
+        help="Weight of the 4-class CE term (ignored with --wake-only).",
     )
     return parser.parse_args()
 
@@ -156,9 +201,29 @@ def main() -> None:
     pos_weight = torch.tensor([bounded_pos_weight], device=device)
 
     model = AcousticWakeCNN(args.arch, pretrained=not args.no_pretrained).to(device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
+    if args.init_checkpoint is not None:
+        load_init_checkpoint(model, args.init_checkpoint, device)
+
+    head_params = list(model.head_wake.parameters()) + list(model.head_class.parameters())
+    optimizer = torch.optim.AdamW(
+        [
+            {"params": model.backbone.parameters(), "lr": args.lr * args.backbone_lr_mult},
+            {"params": head_params, "lr": args.lr},
+        ],
+        weight_decay=1e-4,
+    )
     bce = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     ce = nn.CrossEntropyLoss()
+
+    stage = "stage 1 (wake only)" if args.wake_only else "wake + 4-class"
+    if args.init_checkpoint is not None:
+        init_desc = str(args.init_checkpoint)
+    else:
+        init_desc = "random" if args.no_pretrained else "ImageNet"
+    print(
+        f"Training {stage} | arch={args.arch} | init={init_desc} "
+        f"| backbone_lr={args.lr * args.backbone_lr_mult:.2e} head_lr={args.lr:.2e}"
+    )
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     best_utility = -1.0
@@ -169,21 +234,25 @@ def main() -> None:
         for batch in train_loader:
             optimizer.zero_grad()
             wake_l, cls_l = model(batch["spectrogram"].to(device))
-            loss = bce(wake_l, batch["has_drone"].to(device)) + 0.5 * ce(
-                cls_l, batch["sound_class"].to(device)
-            )
+            loss = bce(wake_l, batch["has_drone"].to(device))
+            if not args.wake_only:
+                loss = loss + args.class_loss_weight * ce(
+                    cls_l, batch["sound_class"].to(device)
+                )
             loss.backward()
             optimizer.step()
 
         model.eval()
-        prob_batches, trues = [], []
+        prob_batches, trues, cls_hits = [], [], []
         with torch.no_grad():
             for batch in valid_loader:
-                wake_l, _ = model(batch["spectrogram"].to(device))
+                wake_l, cls_l = model(batch["spectrogram"].to(device))
                 prob_batches.append(torch.sigmoid(wake_l).cpu().numpy())
                 trues.append(batch["has_drone"].numpy() > 0.5)
+                cls_hits.append((cls_l.argmax(1).cpu() == batch["sound_class"]).numpy())
         probs_np = np.concatenate(prob_batches)
         t_np = np.concatenate(trues)
+        cls_acc = float(np.concatenate(cls_hits).mean())
         ep_best_u = -1.0
         ep_best_t = 0.5
         ep_stats = (0.0, 0.0, 0, 0, 0)
@@ -200,9 +269,10 @@ def main() -> None:
                 ep_best_t = thr
                 ep_stats = (f1, duty_cycle, tp, fp, fn)
         f1, duty_cycle, tp, fp, fn = ep_stats
+        acc_txt = "n/a (wake-only)" if args.wake_only else f"{cls_acc:.4f}"
         print(
             f"Epoch {epoch}/{args.epochs} valid_wake_F1={f1:.4f} duty={duty_cycle:.2f} "
-            f"@thr={ep_best_t:.2f} (TP={tp} FP={fp} FN={fn})"
+            f"@thr={ep_best_t:.2f} (TP={tp} FP={fp} FN={fn}) valid_cls_acc={acc_txt}"
         )
         if ep_best_u >= best_utility:
             best_utility = ep_best_u
@@ -231,11 +301,17 @@ def main() -> None:
     exported_model = onnx.load(onnx_path)
     metadata = {entry.key: entry.value for entry in exported_model.metadata_props}
     metadata["wake_threshold"] = str(best_thresh)
+    metadata["training_stage"] = "wake_only" if args.wake_only else "wake_and_class"
     onnx.helper.set_model_props(exported_model, metadata)
     onnx.save(exported_model, onnx_path)
     print(
         f"Saved {onnx_path} (best_utility={best_utility:.4f}, best_wake_thresh={best_thresh:.2f}; input scaled [0, 1])"
     )
+    if args.wake_only:
+        print(
+            "WARNING: stage-1 model — sound_class_logits are untrained. Do NOT submit; "
+            f"run stage 2 with --init-checkpoint {args.output_dir / 'audio_wake_best.pt'}"
+        )
     print(
         "\n--- Axelera Voyager SDK Quantization / Compilation Guide ---\n"
         "ONNX graph bakes ImageNet mean/std internally (input tensor expected in [0, 1]).\n"
