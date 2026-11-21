@@ -1,0 +1,8 @@
+{"id": "c5_0004", "split": "valid", "audio": "audio/valid/c5_0004.wav", "video": "video/valid/c5_0004.mp4", "spectrogram": "spectrograms/valid/c5_0004.png", "has_drone_audio": false, "sound_class": "vehicle_mechanical"}
+{"id": "c5_0006", "split": "valid", "audio": "audio/valid/c5_0006.wav", "video": "video/valid/c5_0006.mp4", "spectrogram": "spectrograms/valid/c5_0006.png", "has_drone_audio": true, "sound_class": "drone_buzz"}
+{"id": "c5_0014", "split": "valid", "audio": "audio/valid/c5_0014.wav", "video": "video/valid/c5_0014.mp4", "spectrogram": "spectrograms/valid/c5_0014.png", "has_drone_audio": false, "sound_class": "vehicle_mechanical"}
+{"id": "c5_0016", "split": "valid", "audio": "audio/valid/c5_0016.wav", "video": "video/valid/c5_0016.mp4", "spectrogram": "spectrograms/valid/c5_0016.png", "has_drone_audio": false, "sound_class": "vehicle_mechanical"}
+{"id": "c5_0021", "split": "valid", "audio": "audio/valid/c5_0021.wav", "video": "video/valid/c5_0021.mp4", "spectrogram": "spectrograms/valid/c5_0021.png", "has_drone_audio": false, "sound_class": "vehicle_mechanical"}
+{"id": "c5_0025", "split": "valid", "audio": "audio/valid/c5_0025.wav", "video": "video/valid/c5_0025.mp4", "spectrogram": "spectrograms/valid/c5_0025.png", "has_drone_audio": false, "sound_class": "ambient_outdoor"}
+{"id": "c5_0030", "split": "valid", "audio": "audio/valid/c5_0030.wav", "video": "video/valid/c5_0030.mp4", "spectrogram": "spectrograms/valid/c5_0030.png", "has_drone_audio": true, "sound_class": "drone_buzz"}
+{"id": "c5_0033", "split": "valid", "audio": "audio/valid/c5_0033.wav", "video": "video/valid/c5_0033.mp4", "spectrogram": "spectrograms/valid/c5_0033.png", "has_drone_audio": false, "sound_class": "explosion"}

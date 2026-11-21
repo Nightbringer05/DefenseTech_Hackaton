@@ -1,0 +1,14 @@
+# Downloaded and generated data: too large for GitHub, regenerate with WorkSpace/harmonize scripts
+WorkSpace/*.zip
+WorkSpace/mad-dataset/
+WorkSpace/datasets/
+
+# Training outputs
+**/runs/
+*.pt
+*.onnx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
