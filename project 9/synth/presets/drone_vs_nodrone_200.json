@@ -27,9 +27,8 @@
     "test_split": false,
     "as_drone_background": true
   },
-  "mix": {
-    "real_background_prob": 1.0,
-    "use_challenge_backgrounds": false
-  },
-  "include_real": false
+  "include_real": false,
+  "drone": {
+    "model": "physics"
+  }
 }

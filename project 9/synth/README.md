@@ -114,11 +114,33 @@ Every mapping is editable in the page or via `mad.mapping` in the config.
 N rotors × blade-pass harmonics (BPF = blades × RPM / 60) with shared + per-rotor RPM wander,
 motor whine, blade-rate AM and hiss → flyby / hover / approach trajectory with retarded-time
 Doppler, 1/r and air absorption (`numpy` engine, or `acoular` `MovingPointSource`) → mixed over a
-real background at SNR = U(snr at 30 m) − 20·log10(r_min / 30 m).
+real background (see **SNR** below).
 
-Backgrounds under drones: challenge train non-drone clips + mapped MAD training clips. Optional
-synthetic vehicle / explosion / ambient clips only use quiet backgrounds (challenge
-`ambient_outdoor`), so their labels stay clean.
+Two drone models: `drone.model = "simple"` (default; the RPM, spread and jitter ranges in the
+page) or `"physics"` (airframe types with mass/payload → rotor RPM, `dronesynth/drones.py`; used
+by the `drone_vs_nodrone_200` preset).
+
+### SNR
+
+RMS over the whole 5 s clip, drone vs. background, both normalised first:
+
+```
+snr = U(snr_db_at_30m)                                    # default 5 … 25 dB
+    − distance_db_per_decade · log10(max(r_min, 30) / 30)  # default 10: 100 m −5 dB, 300 m −10 dB
+    + physics_level_weight · level_db                      # physics model only, default 0.5
+snr = clip(snr, snr_clip_db)                               # default −5 … 25 dB
+```
+
+Free-field spreading would be 20 dB per decade, but the MAD backgrounds are recorded at an
+unknown distance and gain, ground reflection adds energy, and narrowband rotor tones stay audible
+below broadband noise, so the full 20 dB made most distant drones inaudible. Before this change
+(20 dB/decade, full loudness term, −12 … 30 dB) the 200 set had a median of 9.5 dB and 14 % of
+drones below 0 dB; now the median is 14 dB and 2 % are below 0 dB.
+
+Backgrounds come only from MAD training recordings; there is no procedural noise and no
+challenge audio in the mix. Drones go over any mapped MAD clip; synthetic vehicle / explosion /
+ambient clips and the padding of short MAD clips use MAD clips mapped to `ambient_outdoor`
+(footsteps), so their labels stay clean.
 
 ## Synthetic salvos
 

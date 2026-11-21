@@ -111,26 +111,6 @@ def explosion(rng, n, sr, cfg):
     return _norm(out), dict(onset_s=round(onset / sr, 2), decay_s=round(tau, 2))
 
 
-def ambient(rng, n, sr, cfg=None):
-    """Outdoor bed: pink-ish noise, wind gusts, occasional bird chirps."""
-    white = rng.normal(size=n)
-    b, a = [0.049922035, -0.095993537, 0.050612699, -0.004408786], [1, -2.494956002, 2.017265875, -0.522189400]
-    pink = _norm(sps.lfilter(b, a, white))
-    gust = np.clip(1 + _random_walk(rng, n, sr, 0.8, 0.4), 0.05, None)
-    wind = _norm(_bandnoise(rng, n, sr, 20, 400)) * gust
-    out = 0.5 * pink + _u(rng, (0.0, 1.0)) * wind
-    for _ in range(int(rng.integers(0, 4))):
-        s = int(rng.uniform(0, n - 0.3 * sr))
-        L = int(_u(rng, (0.05, 0.25)) * sr)
-        f0, f1 = _u(rng, (2000, 5000)), _u(rng, (2000, 7000))
-        tt = np.arange(L) / sr
-        chirp = np.sin(2 * np.pi * (f0 * tt + (f1 - f0) * tt ** 2 / (2 * tt[-1])))
-        out[s : s + L] += _u(rng, (0.05, 0.3)) * chirp * np.hanning(L)
-    return _norm(out), {}
-
-
-# ---------------------------------------------------------------- salvos
-
 def _shot(rng, sr, heavy=False, distance=None):
     """One report: optional supersonic crack (N-wave) + muzzle blast + short tail."""
     dist = distance if distance is not None else rng.uniform(30, 600)

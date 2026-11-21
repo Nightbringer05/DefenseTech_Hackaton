@@ -1,8 +1,8 @@
 {
   "name": "drone_vs_nodrone_200",
   "comment": "Binary drone / no-drone baseline: 100 synthetic drones (physics model) over MAD noise, 100 MAD noise clips. Helicopters and speech excluded.",
-  "created": "2026-11-21 16:20:24",
-  "seconds": 4.9,
+  "created": "2026-11-21 17:08:15",
+  "seconds": 7.0,
   "synthetic_clips": 100,
   "mad_clips": 100,
   "real_train_clips": 0,
@@ -34,8 +34,8 @@
     }
   },
   "backgrounds_available": {
-    "quiet": 0,
-    "any": 4721
+    "any": 4721,
+    "quiet": 773
   },
   "audio_format": "flac",
   "config": {
@@ -71,6 +71,31 @@
       "ambient_outdoor": 0
     },
     "drone": {
+      "model": "physics",
+      "rotors": [
+        4,
+        4,
+        4,
+        6,
+        8
+      ],
+      "blades": [
+        2,
+        2,
+        3
+      ],
+      "rpm": [
+        3000,
+        9000
+      ],
+      "rpm_spread_pct": [
+        0.3,
+        3.0
+      ],
+      "rpm_jitter_pct": [
+        0.5,
+        4.0
+      ],
       "types": {
         "mini": 0.2,
         "camera": 0.3,
@@ -162,20 +187,19 @@
     },
     "mix": {
       "snr_db_at_30m": [
-        0,
+        5,
         25
       ],
+      "distance_db_per_decade": 10,
+      "physics_level_weight": 0.5,
       "snr_clip_db": [
-        -12,
-        30
+        -5,
+        25
       ],
       "explosion_snr_db": [
         0,
         30
       ],
-      "real_background_prob": 1.0,
-      "use_challenge_backgrounds": false,
-      "background_dirs": [],
       "peak_dbfs": [
         -12,
         -1

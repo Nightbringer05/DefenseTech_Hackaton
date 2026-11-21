@@ -64,7 +64,14 @@ DEFAULT_CONFIG = {
     },
     "counts": {"drone_buzz": 2000, "vehicle_mechanical": 0, "explosion": 600, "ambient_outdoor": 0},
     "drone": {
-        # airframe archetypes (see dronesynth/drones.py) and their sampling weights
+        "model": "simple",             # "simple": RPM ranges below; "physics": airframe types (drones.py)
+        # simple model
+        "rotors": [4, 4, 4, 6, 8],     # sampled uniformly from this list (repeat to weight)
+        "blades": [2, 2, 3],
+        "rpm": [3000, 9000],
+        "rpm_spread_pct": [0.3, 3.0],
+        "rpm_jitter_pct": [0.5, 4.0],
+        # physics model: airframe archetypes and their sampling weights
         "types": {"mini": 0.2, "camera": 0.3, "fpv": 0.25, "heavy": 0.12, "agri": 0.05, "fixed_wing": 0.08},
         "payload_frac": [0.0, 0.6],    # share of the archetype's max payload
         "manoeuvres": {"steady": 0.5, "climb": 0.2, "aggressive": 0.3},
@@ -92,12 +99,13 @@ DEFAULT_CONFIG = {
         "speed_mps": [3, 25],
     },
     "mix": {
-        "snr_db_at_30m": [0, 25],      # drone/vehicle SNR at 30 m, scaled by 1/r with range
-        "snr_clip_db": [-12, 30],
+        "snr_db_at_30m": [5, 25],      # drone/vehicle SNR when the source passes within 30 m
+        "distance_db_per_decade": 10,  # SNR drop per 10x distance beyond 30 m (free field = 20;
+                                       # 10 accounts for ground reflection and backgrounds
+                                       # recorded at unknown range)
+        "physics_level_weight": 0.5,   # share of the airframe loudness term added to the SNR
+        "snr_clip_db": [-5, 25],
         "explosion_snr_db": [0, 30],
-        "real_background_prob": 0.8,   # else procedural ambient bed
-        "use_challenge_backgrounds": True,  # challenge train non-drone clips as backgrounds
-        "background_dirs": [],         # any extra folders of .wav / .flac files
         "peak_dbfs": [-12, -1],
     },
     "include_real": True,              # copy the 48 real challenge train clips in
@@ -189,24 +197,23 @@ def mad_rows(cfg, base: Path, split: str) -> list[dict]:
 
 
 def background_pools(cfg, base: Path) -> dict[str, list[str]]:
-    """Real non-drone backgrounds, train splits only (no valid/test leakage).
+    """Backgrounds come only from MAD training recordings (never MAD test or challenge audio).
 
-    quiet: challenge ambient_outdoor clips (+ background_dirs) -> under ambient / vehicle / explosion
-    any:   quiet + challenge vehicle/explosion + mapped MAD training clips -> under drones
+    any:   every MAD training clip mapped to a challenge class -> under synthetic drones
+    quiet: the ones mapped to ambient_outdoor (footsteps) -> under synthetic vehicles/explosions,
+           as synthetic ambient clips, and as the bed for padding short MAD clips
     """
-    root = _challenge_root(cfg, base)
-    quiet, loud = [], []
-    if cfg["mix"]["use_challenge_backgrounds"]:
-        for r in _challenge_rows(cfg, base, "train"):
-            if r["has_drone_audio"]:
-                continue
-            (quiet if r["sound_class"] == "ambient_outdoor" else loud).append(str(root / r["audio"]))
-    for d in cfg["mix"]["background_dirs"]:
-        p = Path(d) if Path(d).is_absolute() else (base / d)
-        quiet += [str(f) for f in sorted(list(p.rglob("*.wav")) + list(p.rglob("*.flac")))]
-    mad = [r["path"] for r in mad_rows(cfg, base, "training")] \
-        if cfg["mad"]["enabled"] and cfg["mad"]["as_drone_background"] else []
-    return {"quiet": quiet, "any": quiet + loud + mad}
+    rows = mad_rows(cfg, base, "training")
+    return {"any": [r["path"] for r in rows],
+            "quiet": [r["path"] for r in rows if r["class"] == "ambient_outdoor"]}
+
+
+def _pick_background(rng, paths: list[str], n: int, sr: int, what: str):
+    if not paths:
+        raise ValueError(f"No MAD recordings available as {what}. Check that MAD_dataset/ exists and "
+                         "that at least one MAD label is mapped (ambient_outdoor for quiet backgrounds).")
+    bp = paths[int(rng.integers(len(paths)))]
+    return _crop(rng, read_audio(Path(bp), sr), n), _short(bp)
 
 
 # ---------------------------------------------------------------- one synthetic clip
@@ -218,20 +225,13 @@ def make_clip(cfg: dict, kind: str, seed: int, pools: dict[str, list[str]]):
     mix = cfg["mix"]
     params: dict = {"kind": kind, "seed": seed}
 
-    bg_paths = pools["any"] if kind == "drone_buzz" else pools["quiet"]
-    if bg_paths and rng.random() < mix["real_background_prob"]:
-        bp = bg_paths[int(rng.integers(len(bg_paths)))]
-        bg = _crop(rng, read_audio(Path(bp), sr), n)
-        params["background"] = _short(bp)
+    if kind == "drone_buzz":
+        bg, params["background"] = _pick_background(rng, pools["any"], n, sr, "drone backgrounds")
     else:
-        bg, _ = sources.ambient(rng, n, sr)
-        params["background"] = "procedural"
+        bg, params["background"] = _pick_background(rng, pools["quiet"], n, sr, "quiet backgrounds")
     bg = bg / _rms(bg)
 
     if kind == "ambient_outdoor":
-        if params["background"] != "procedural" and rng.random() < 0.5:
-            extra, _ = sources.ambient(rng, n, sr)
-            bg = 0.6 * bg + 0.4 * extra / _rms(extra)
         return _finish(rng, bg, mix), params
 
     n_src = n + int(PAD_S * sr)
@@ -259,16 +259,35 @@ def make_clip(cfg: dict, kind: str, seed: int, pools: dict[str, list[str]]):
         params.update(fp)
         sig = propagate(src, sr, n, pos, cfg["engine"])
         params["engine"] = cfg["engine"] if (cfg["engine"] != "acoular" or acoular_available()) else "numpy"
-        snr = rng.uniform(*mix["snr_db_at_30m"]) - 20 * np.log10(max(fp["min_range_m"], 1) / 30.0)
-        snr = float(np.clip(snr, *mix["snr_clip_db"]))
+        snr = _snr(rng, mix, fp["min_range_m"])
         sig = sig / _rms(sig)
     params["snr_db"] = round(float(snr), 1)
     y = bg + sig * 10 ** (snr / 20)
     return _finish(rng, y, mix), params
 
 
+def _snr(rng, mix, min_range_m, level_db=0.0) -> float:
+    """Clip SNR (RMS over the clip, dB): base draw, gentle distance roll-off, optional loudness term."""
+    k = float(mix.get("distance_db_per_decade", 10))
+    dist = k * np.log10(max(min_range_m, 30.0) / 30.0)  # no bonus for passing closer than 30 m
+    return float(np.clip(rng.uniform(*mix["snr_db_at_30m"]) - dist + level_db, *mix["snr_clip_db"]))
+
+
 def _drone_clip(cfg, rng, bg, n, n_src, params):
     sr, dc, mix = cfg["sample_rate"], cfg["drone"], cfg["mix"]
+    if dc.get("model", "simple") != "physics":
+        src, sp = sources.drone(rng, n_src, sr, dc)
+        _, pos, fp = sample_trajectory(rng, cfg["duration_s"], cfg["flight"])
+        params.update(fp)
+        params.update(sp)
+        params["drone_model"] = "simple"
+        sig = propagate(src, sr, n, pos, cfg["engine"])
+        params["engine"] = cfg["engine"] if (cfg["engine"] != "acoular" or acoular_available()) else "numpy"
+        snr = _snr(rng, mix, fp["min_range_m"])
+        params["snr_db"] = round(snr, 1)
+        y = bg + sig / _rms(sig) * 10 ** (snr / 20)
+        return _finish(rng, y, mix), params
+    params["drone_model"] = "physics"
     temp = float(rng.uniform(*dc["temperature_c"]))
     elev = float(rng.uniform(*dc["elevation_m"]))
     spec = drones.sample_spec(rng, dc, temp, elev)
@@ -292,10 +311,8 @@ def _drone_clip(cfg, rng, bg, n, n_src, params):
     params.update(sp)
     sig = propagate(src, sr, n, pos, cfg["engine"], c=spec["c"])
     params["engine"] = cfg["engine"] if (cfg["engine"] != "acoular" or acoular_available()) else "numpy"
-    snr = rng.uniform(*mix["snr_db_at_30m"]) - 20 * np.log10(max(fp["min_range_m"], 1) / 30.0)
-    if dc["level_from_physics"]:
-        snr += sp["level_db"]
-    snr = float(np.clip(snr, *mix["snr_clip_db"]))
+    level = sp["level_db"] * float(mix.get("physics_level_weight", 0.5)) if dc["level_from_physics"] else 0.0
+    snr = _snr(rng, mix, fp["min_range_m"], level)
     params["snr_db"] = round(snr, 1)
     y = bg + sig / _rms(sig) * 10 ** (snr / 20)
     return _finish(rng, y, mix), params
@@ -330,13 +347,7 @@ def make_mad_clip(cfg: dict, item: dict, seed: int, quiet: list[str]):
         y = x[start : start + n]
         params["offset_s"] = round(start / sr, 2)
     else:  # short clip: place it over a quiet real background, ~20 dB down
-        if quiet:
-            bp = quiet[int(rng.integers(len(quiet)))]
-            bg = _crop(rng, read_audio(Path(bp), sr), n)
-            params["background"] = _short(bp)
-        else:
-            bg, _ = sources.ambient(rng, n, sr)
-            params["background"] = "procedural"
+        bg, params["background"] = _pick_background(rng, quiet, n, sr, "padding beds")
         bg = bg / _rms(bg) * _rms(x) * 10 ** (-rng.uniform(15, 25) / 20)
         start = int(rng.integers(0, n - len(x) + 1))
         fade = min(160, len(x) // 4)
