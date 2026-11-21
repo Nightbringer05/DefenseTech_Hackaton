@@ -1,0 +1,159 @@
+# Drone Sound Toolkit
+
+Builds Challenge 5 training sets as **FLAC**, in the **challenge's own folder layout**, from:
+
+- **MAD_dataset/**: real military recordings (7 labels) mapped onto the 4 challenge classes
+- **synthetic drones**: procedural multirotor audio flown past the mic and mixed over real
+  non-drone recordings (MAD has no drones)
+
+Spectrogram PNGs match the provided ones, so the starter-kit trainer reads the result unchanged.
+
+## Run
+
+```bash
+cd synth
+uv venv -p 3.11 .venv && uv pip install -p .venv -r requirements.txt
+# or: python3.11 -m venv .venv && .venv/bin/pip install -r requirements.txt
+source .venv/bin/activate
+python server.py                          # http://127.0.0.1:8770
+python server.py --host 0.0.0.0           # reachable from your LAN
+```
+
+In the page: pick a preset, adjust the MAD → class mapping and drone ranges, check the
+**Dataset contents** table (live counts per split and class), preview single MAD or synthetic
+clips, click **Generate dataset**, then **Download dataset (.zip)** or **Audio + labels only (.zip)**.
+The default (all mapped MAD clips + 2000 synthetic drones + 600 synthetic explosions/salvos, ~9.1k clips) renders in about
+45 s on 11 cores and is ~870 MB of FLAC.
+
+`.venv/` and `out/` are gitignored.
+
+### CLI
+
+```bash
+python generate.py                                   # defaults: MAD full + 2000 drones + 600 explosions/salvos, FLAC
+python generate.py --name small --mad-per-class 100 --drone 300
+python generate.py --name x2 --windows 2 --drone 4000  # two 5 s windows from long MAD clips
+python generate.py --name synth_only --no-mad --drone 800 --vehicle 600 --explosion 300 --ambient 300
+python generate.py --print-config > my.json           # edit mapping/ranges, then --config my.json
+```
+
+### Train on it
+
+```bash
+cd starter-kit
+python train_audio_cnn_axelera.py --challenge-dir ../synth/out/mad_full --epochs 12 \
+  --calibration-dir ../calibration_spectrograms --output-dir runs/mad_full
+```
+
+## Sample dataset (committed)
+
+`sample/sample_20mb/` (19.7 MB, FLAC) is a small ready-made dataset for trying the pipeline
+without generating: 152 train clips (72 MAD, 56 synthetic drones, 24 synthetic
+explosions/salvos) plus the 8 real valid clips. Regenerate it with:
+
+```bash
+echo '{"mad":{"test_split":false}}' > /tmp/s.json
+python generate.py --name sample_20mb --mad-per-class 12 --drone 56 --explosion 24 \
+  --no-real --out sample --config /tmp/s.json
+```
+
+Full-size datasets go to `out/`, which is gitignored.
+
+## MAD → challenge classes
+
+MAD ships `training.csv` / `test.csv` (`path,label,youtube title,youtube url`) and
+`training/<video>/<n>.wav`, `test/<video>/<n>.wav`: 16 kHz mono, 2–10 s. Label ids follow the
+MAD paper; title keywords in `training.csv` agree (e.g. label 6 titles: 1329 jet/fighter hits).
+
+| MAD id | MAD label | train / test clips | default challenge class |
+|---|---|---|---|
+| 0 | communication | 774 / 207 | skip (speech; the challenge screened it out) |
+| 1 | shooting | 1293 / 280 | explosion |
+| 2 | footsteps | 773 / 104 | ambient_outdoor |
+| 3 | shelling | 883 / 104 | explosion |
+| 4 | vehicle | 910 / 122 | vehicle_mechanical |
+| 5 | helicopter | 934 / 91 | vehicle_mechanical (rotor harmonics: hard negative) |
+| 6 | fighter | 862 / 129 | vehicle_mechanical |
+
+Every mapping is editable in the page or via `mad.mapping` in the config.
+
+- **5 s clips**: long recordings give `windows_per_clip` evenly spread random 5 s windows;
+  shorter ones are either padded (placed at a random offset over a real challenge
+  `ambient_outdoor` clip ~20 dB down, with fades) or skipped.
+- **Splits**: MAD `training` → `train/`; MAD `test` → `mad_test/` (held out, never used as
+  background); real challenge `valid/` → `valid/` (threshold selection); the 48 real challenge
+  train clips are added to `train/` (losslessly converted to FLAC).
+
+## Synthetic drones
+
+N rotors × blade-pass harmonics (BPF = blades × RPM / 60) with shared + per-rotor RPM wander,
+motor whine, blade-rate AM and hiss → flyby / hover / approach trajectory with retarded-time
+Doppler, 1/r and air absorption (`numpy` engine, or `acoular` `MovingPointSource`) → mixed over a
+real background at SNR = U(snr at 30 m) − 20·log10(r_min / 30 m).
+
+Backgrounds under drones: challenge train non-drone clips + mapped MAD training clips. Optional
+synthetic vehicle / explosion / ambient clips only use quiet backgrounds (challenge
+`ambient_outdoor`), so their labels stay clean.
+
+## Synthetic salvos
+
+Synthetic `explosion` clips (600 by default) are 60% salvos, 40% single blasts. Salvo kinds,
+weighted by `explosion.salvo_types`:
+
+- **burst**: automatic fire, 500–950 rounds/min, 3–30 rounds, sometimes a second burst
+- **volley**: 3–11 rifles firing within ~40 ms, 1–3 volleys
+- **artillery**: 2–6 guns within 3 s, heavy low-frequency booms, 300–4000 m
+
+Each shot has a muzzle blast, a supersonic crack (N-wave) for half the small-arms shots,
+distance low-pass and level, and 0–2 terrain echoes. `params` records `salvo`, `shots`,
+`salvo_range_m` and `rate_rpm`. MAD `shooting` clips already contain real bursts; the synthetic
+ones add controlled rate/range variety.
+
+## Output
+
+```
+out/<name>/
+  audio/{train,valid,mad_test}/<id>.flac       16 kHz mono 16-bit, exactly 5 s (challenge originals kept as-is)
+  spectrograms/{train,valid,mad_test}/<id>.png 224x224 log-mel, challenge style
+  dataset/{train,valid,mad_test}/labels.jsonl
+  manifest.json                                config, per-split class counts, timing
+```
+
+Each row has the challenge fields plus `source` (`mad` / `synthetic` / `challenge`) and
+`params`: for MAD the source file, MAD label, YouTube URL, window offset and padding; for drones
+rotors, blades, RPM, BPF, flight mode, altitude, min range, SNR, background and seed. IDs:
+`mad_<video>_<n>_w<k>`, `madtest_…`, `syn_000001`.
+
+Spectrogram settings (`dronesynth/spectro.py`): n_fft 1024, hop 160, 64 Slaney mel bands, dB
+with top_db 80, flipped, bilinear to 224×224 grayscale; mean pixel correlation 0.979 with the
+provided train PNGs.
+
+### Downloads
+
+```
+GET /download/<name>.zip              everything
+GET /download/<name>.zip?parts=audio  FLAC + labels + manifest (no PNGs)
+GET /files/<name>/audio/train/<id>.flac
+```
+
+Zips are cached as `out/.<name>.<parts>.zip` and rebuilt when the dataset changes.
+
+## Caveats
+
+- MAD audio comes from YouTube: expect music, narration and compression artefacts that the
+  challenge clips were screened for.
+- Many MAD videos contain several labels and long clips share a source video, so per-clip
+  splits within MAD `training` would leak; use `mad_test/` or the real `valid/` for evaluation.
+- Synthetic drones are a model, not recordings. Check results on real `valid/`.
+
+## Files
+
+```
+synth/
+  server.py               local website + JSON API (stdlib http.server)
+  generate.py             CLI
+  dronesynth/             dataset.py (MAD + mixing + splits), sources.py, propagate.py, spectro.py
+  web/index.html          the page (works with or without the server)
+  web/clips/              demo FLACs from the Acoular flyby
+  examples/acoular_flyby.py
+```

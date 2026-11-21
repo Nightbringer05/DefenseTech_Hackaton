@@ -1,0 +1,6 @@
+numpy>=1.26
+scipy>=1.13
+pillow>=10.4
+soundfile>=0.12   # FLAC/WAV io (bundles libsndfile)
+# optional: reference propagation engine (engine="acoular")
+acoular>=25.1
