@@ -1,24 +1,25 @@
 {
   "name": "sample_20mb",
-  "created": "2026-11-21 14:18:44",
-  "seconds": 2.6,
-  "synthetic_clips": 80,
-  "mad_clips": 72,
+  "comment": "Small example: MAD noise (no helicopters, no speech) + synthetic drones and explosions, MAD-only backgrounds.",
+  "created": "2026-11-21 17:15:09",
+  "seconds": 3.5,
+  "synthetic_clips": 70,
+  "mad_clips": 60,
   "real_train_clips": 0,
   "valid_clips": 8,
   "counts": {
-    "drone_buzz": 56,
-    "vehicle_mechanical": 36,
-    "explosion": 48,
+    "drone_buzz": 50,
+    "vehicle_mechanical": 24,
+    "explosion": 44,
     "ambient_outdoor": 12
   },
   "splits": {
     "train": {
-      "total": 152,
+      "total": 130,
       "classes": {
-        "drone_buzz": 56,
-        "vehicle_mechanical": 36,
-        "explosion": 48,
+        "drone_buzz": 50,
+        "vehicle_mechanical": 24,
+        "explosion": 44,
         "ambient_outdoor": 12
       }
     },
@@ -33,12 +34,13 @@
     }
   },
   "backgrounds_available": {
-    "quiet": 7,
-    "any": 5688
+    "any": 4721,
+    "quiet": 773
   },
   "audio_format": "flac",
   "config": {
     "name": "sample_20mb",
+    "comment": "Small example: MAD noise (no helicopters, no speech) + synthetic drones and explosions, MAD-only backgrounds.",
     "seed": 0,
     "sample_rate": 16000,
     "duration_s": 5.0,
@@ -53,7 +55,7 @@
         "2": "ambient_outdoor",
         "3": "explosion",
         "4": "vehicle_mechanical",
-        "5": "vehicle_mechanical",
+        "5": "skip",
         "6": "vehicle_mechanical"
       },
       "max_per_label": 12,
@@ -63,12 +65,13 @@
       "as_drone_background": true
     },
     "counts": {
-      "drone_buzz": 56,
+      "drone_buzz": 50,
       "vehicle_mechanical": 0,
-      "explosion": 24,
+      "explosion": 20,
       "ambient_outdoor": 0
     },
     "drone": {
+      "model": "simple",
       "rotors": [
         4,
         4,
@@ -93,6 +96,37 @@
         0.5,
         4.0
       ],
+      "types": {
+        "mini": 0.2,
+        "camera": 0.3,
+        "fpv": 0.25,
+        "heavy": 0.12,
+        "agri": 0.05,
+        "fixed_wing": 0.08
+      },
+      "payload_frac": [
+        0.0,
+        0.6
+      ],
+      "manoeuvres": {
+        "steady": 0.5,
+        "climb": 0.2,
+        "aggressive": 0.3
+      },
+      "wind_mps": [
+        0,
+        12
+      ],
+      "temperature_c": [
+        -10,
+        35
+      ],
+      "elevation_m": [
+        0,
+        1500
+      ],
+      "flight_from_type": true,
+      "level_from_physics": true,
       "harmonics": [
         6,
         14
@@ -153,20 +187,19 @@
     },
     "mix": {
       "snr_db_at_30m": [
-        0,
+        5,
         25
       ],
+      "distance_db_per_decade": 10,
+      "physics_level_weight": 0.5,
       "snr_clip_db": [
-        -12,
-        30
+        -5,
+        25
       ],
       "explosion_snr_db": [
         0,
         30
       ],
-      "real_background_prob": 0.8,
-      "use_challenge_backgrounds": true,
-      "background_dirs": [],
       "peak_dbfs": [
         -12,
         -1

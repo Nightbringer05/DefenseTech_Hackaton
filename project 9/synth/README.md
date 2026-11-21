@@ -3,7 +3,7 @@
 Builds Challenge 5 training sets as **FLAC**, in the **challenge's own folder layout**, from:
 
 - **MAD_dataset/**: real military recordings (7 labels) mapped onto the 4 challenge classes
-- **synthetic drones**: procedural multirotor audio flown past the mic and mixed over real
+- **synthetic drones**: synthesized multirotor audio flown past the mic and mixed over real
   non-drone recordings (MAD has no drones)
 
 Spectrogram PNGs match the provided ones, so the starter-kit trainer reads the result unchanged.
@@ -72,13 +72,13 @@ preset button.
 
 ## Sample dataset (committed)
 
-`sample/sample_20mb/` (19.7 MB, FLAC) is a small ready-made dataset for trying the pipeline
-without generating: 152 train clips (72 MAD, 56 synthetic drones, 24 synthetic
-explosions/salvos) plus the 8 real valid clips. Regenerate it with:
+`sample/sample_20mb/` (19.5 MB, FLAC) is a small ready-made dataset: 130 train clips (60 MAD noise
+without helicopters or speech, 50 synthetic drones, 20 synthetic explosions/salvos), all
+backgrounds from MAD, plus the 8 real valid clips. Regenerate it with:
 
 ```bash
-echo '{"mad":{"test_split":false}}' > /tmp/s.json
-python generate.py --name sample_20mb --mad-per-class 12 --drone 56 --explosion 24 \
+echo '{"mad":{"test_split":false,"mapping":{"0":"skip","5":"skip"}}}' > /tmp/s.json
+python generate.py --name sample_20mb --mad-per-class 12 --drone 50 --explosion 20 \
   --no-real --out sample --config /tmp/s.json
 ```
 

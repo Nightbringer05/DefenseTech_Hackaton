@@ -1,0 +1,9 @@
+id,split,audio,video,spectrogram,has_drone_audio,sound_class
+c5_0004,valid,audio/valid/c5_0004.flac,,spectrograms/valid/c5_0004.png,false,vehicle_mechanical
+c5_0006,valid,audio/valid/c5_0006.flac,,spectrograms/valid/c5_0006.png,true,drone_buzz
+c5_0014,valid,audio/valid/c5_0014.flac,,spectrograms/valid/c5_0014.png,false,vehicle_mechanical
+c5_0016,valid,audio/valid/c5_0016.flac,,spectrograms/valid/c5_0016.png,false,vehicle_mechanical
+c5_0021,valid,audio/valid/c5_0021.flac,,spectrograms/valid/c5_0021.png,false,vehicle_mechanical
+c5_0025,valid,audio/valid/c5_0025.flac,,spectrograms/valid/c5_0025.png,false,ambient_outdoor
+c5_0030,valid,audio/valid/c5_0030.flac,,spectrograms/valid/c5_0030.png,true,drone_buzz
+c5_0033,valid,audio/valid/c5_0033.flac,,spectrograms/valid/c5_0033.png,false,explosion
