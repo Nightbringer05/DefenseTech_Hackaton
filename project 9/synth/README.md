@@ -45,6 +45,27 @@ python train_audio_cnn_axelera.py --challenge-dir ../synth/out/mad_full --epochs
   --calibration-dir ../calibration_spectrograms --output-dir runs/mad_full
 ```
 
+## Drone / no-drone set from the browser
+
+`datasets/drone_vs_nodrone_200/` (committed, 31 MB): 100 synthetic drones over MAD noise + 100
+MAD noise clips (shooting, shelling, vehicle, fighter, footsteps; no helicopters, no speech),
+plus the 8 real challenge valid clips. Each split has `labels.jsonl` (challenge schema, read by
+the trainer), `labels.csv` (same columns) and `metadata.jsonl` (all generator parameters).
+
+To make it (or a variant) in the page:
+
+1. `python server.py` and open http://127.0.0.1:8770
+2. Click the **Drone vs no-drone 200** preset (loaded from `presets/drone_vs_nodrone_200.json`),
+   or use **Drone / no-drone set**: enter total clips and drone share, click **Apply**. It sets
+   the drone count and MAD clips per label, leaves out helicopters and speech, and uses MAD-only
+   backgrounds.
+3. Adjust drone types, payload, wind, SNR and so on, check **Dataset contents**, click
+   **Generate dataset**, then **Download dataset (.zip)**.
+
+The browser run and `python generate.py --config presets/drone_vs_nodrone_200.json` produce
+byte-identical files. Any `presets/*.json` (with optional `_label` / `_description`) appears as a
+preset button.
+
 ## Sample dataset (committed)
 
 `sample/sample_20mb/` (19.7 MB, FLAC) is a small ready-made dataset for trying the pipeline
@@ -124,8 +145,8 @@ Each row has the challenge fields plus `source` (`mad` / `synthetic` / `challeng
 rotors, blades, RPM, BPF, flight mode, altitude, min range, SNR, background and seed. IDs:
 `mad_<video>_<n>_w<k>`, `madtest_…`, `syn_000001`.
 
-Spectrograms (`dronesynth/spectro.py`) use the same pipeline as Adrien's
-`starter-kit/make_spectrogram.py`: first 80 000 samples, n_fft 1024, hop 256, 128 mel bands,
+Spectrograms are made by Adrien's `starter-kit/make_spectrogram.py`, called directly from
+`dronesynth/spectro.py` (which falls back to an identical port if that file is missing): first 80 000 samples, n_fft 1024, hop 256, 128 mel bands,
 50–8000 Hz, power_to_db(ref=max, top_db=80), flipped, bilinear 224×224, RGB. Identical to the
 provided challenge PNGs (max difference 1 grey level on one clip). Needs `librosa`.
 

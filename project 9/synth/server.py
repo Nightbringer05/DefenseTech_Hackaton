@@ -32,8 +32,10 @@ sys.path.insert(0, str(BASE))
 from dronesynth.dataset import CLASSES, DEFAULT_CONFIG, MAD_LABELS, build, estimate, merge_config, preview  # noqa: E402
 from dronesynth.propagate import acoular_available  # noqa: E402
 from dronesynth.drones import archetype_table  # noqa: E402
+from dronesynth import spectro  # noqa: E402
 
 OUT = BASE / "out"
+PRESETS = BASE / "presets"
 
 
 def _mad_counts() -> dict:
@@ -68,6 +70,20 @@ def _run_job(jid: str, cfg: dict) -> None:
         traceback.print_exc()
         with LOCK:
             JOBS[jid].update(state="error", error=f"{type(e).__name__}: {e}")
+
+
+def load_presets() -> list[dict]:
+    """synth/presets/*.json -> [{id, label, description, config}]; label/description keys are optional."""
+    out = []
+    for f in sorted(PRESETS.glob("*.json")):
+        try:
+            d = json.loads(f.read_text())
+        except Exception:
+            continue
+        label = d.pop("_label", None) or f.stem.replace("_", " ")
+        desc = d.pop("_description", "")
+        out.append({"id": f.stem, "label": label, "description": desc, "config": d})
+    return out
 
 
 def list_datasets() -> list[dict]:
@@ -171,6 +187,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"server": True, "acoular": acoular_available(), "classes": CLASSES, "mad_labels": MAD_LABELS,
                                "mad_counts": MAD_COUNTS, "mad_found": bool(MAD_COUNTS),
                                "drone_types": archetype_table(),
+                               "presets": load_presets(), "spectrogram_source": spectro.SOURCE,
                                "defaults": DEFAULT_CONFIG, "out_dir": str(OUT)})
         if path == "/api/jobs":
             with LOCK:

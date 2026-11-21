@@ -450,7 +450,7 @@ def write_labels(split_dir: Path, rows: list[dict]) -> None:
         for r in rows:
             fh.write(json.dumps({k: r.get(k) for k in LABEL_FIELDS}) + "\n")
     with (split_dir / "labels.csv").open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(LABEL_FIELDS)
         for r in rows:
             w.writerow(["" if r.get(k) is None else str(r[k]).lower() if isinstance(r[k], bool) else r[k]

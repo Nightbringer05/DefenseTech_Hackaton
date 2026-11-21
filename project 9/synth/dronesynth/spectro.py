@@ -37,6 +37,31 @@ def logmel_gray(y: np.ndarray, sr: int = SR) -> np.ndarray:
     return np.asarray(img.resize((IMG, IMG), Image.Resampling.BILINEAR), dtype=np.uint8)
 
 
+# Prefer Adrien's script itself (starter-kit/make_spectrogram.py); fall back to the identical
+# port above when synth/ is used outside the repo.
+SOURCE = "dronesynth.spectro (port)"
+try:
+    import importlib.util as _ilu
+    from pathlib import Path as _P
+
+    _f = _P(__file__).resolve().parents[2] / "starter-kit" / "make_spectrogram.py"
+    if _f.exists():
+        _spec = _ilu.spec_from_file_location("make_spectrogram", _f)
+        _ms = _ilu.module_from_spec(_spec)
+        _spec.loader.exec_module(_ms)
+        _port = logmel_gray
+
+        def logmel_gray(y: np.ndarray, sr: int = SR) -> np.ndarray:  # noqa: F811
+            y = np.asarray(y, dtype=np.float32)
+            if sr != _ms.SR:
+                y = librosa.resample(y, orig_sr=sr, target_sr=_ms.SR)
+            return _ms.logmel_gray(y)
+
+        SOURCE = "starter-kit/make_spectrogram.py"
+except Exception:  # pragma: no cover - keep the port
+    pass
+
+
 def spectrogram_image(y: np.ndarray, sr: int = SR) -> Image.Image:
     return Image.fromarray(logmel_gray(y, sr)).convert("RGB")
 

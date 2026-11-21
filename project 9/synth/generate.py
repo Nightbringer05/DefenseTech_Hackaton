@@ -45,6 +45,7 @@ def main() -> None:
     a = ap.parse_args()
 
     user = json.loads(a.config.read_text()) if a.config else {}
+    user = {k: v for k, v in user.items() if not k.startswith("_")}
     cfg = merge_config(user)
     for key in ("name", "seed", "engine", "workers", "audio_format"):
         if getattr(a, key) is not None:

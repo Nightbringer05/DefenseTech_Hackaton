@@ -58,6 +58,7 @@ fieldset{border:0;padding:0;margin:0;display:grid;gap:10px}
 legend{font-family:var(--f-mono);font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:0;margin-bottom:8px}
 .presets{display:flex;gap:6px;flex-wrap:wrap}
 .presets button{font-size:13px;padding:6px 10px}
+.presets button.filepreset{border-color:var(--accent)}
 .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .field{display:grid;gap:4px;min-width:0}
@@ -169,6 +170,20 @@ svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
       <fieldset>
         <legend>Preset</legend>
         <div class="presets" id="presets"></div>
+        <span class="hint">Presets from <code>synth/presets/*.json</code> come first. Spectrograms are made by <code id="specSrc">starter-kit/make_spectrogram.py</code>.</span>
+      </fieldset>
+
+      <fieldset>
+        <legend>Drone / no-drone set</legend>
+        <p class="hint">Sets the drone count and the MAD clips per label so the totals come out right. Drone clips are synthetic drones laid over MAD noise; no-drone clips are MAD noise alone. Fine-tune anything below afterwards.</p>
+        <div class="grid3">
+          <div class="field"><label for="binTotal">Total clips</label><input id="binTotal" type="number" min="2" step="10" value="200"></div>
+          <div class="field"><label for="binShare">Drone share</label><input id="binShare" type="number" min="0.05" max="0.95" step="0.05" value="0.5"></div>
+          <div class="field"><span>&nbsp;</span><button type="button" id="binApply">Apply</button></div>
+        </div>
+        <label class="check"><input type="checkbox" id="binNoHeli" checked> Leave out helicopters (sound too similar to drones)</label>
+        <label class="check"><input type="checkbox" id="binMadOnly" checked> Use only MAD noise as drone backgrounds</label>
+        <span class="hint" id="binNow"></span>
       </fieldset>
 
       <fieldset>
@@ -649,18 +664,57 @@ print(out.shape)   # (220500, 4)</pre>
   }
   function render() {
     scheduleEstimate();
+    if (typeof syncBinary === 'function' && $('binNow')) try { syncBinary(); } catch {}
     $('cliCmd').textContent = cli();
     $('cfgJson').textContent = JSON.stringify(cfg, null, 2);
   }
 
   const pBox = $('presets');
-  Object.entries(PRESETS).forEach(([label, p]) => {
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
-    b.addEventListener('click', () => {
-      cfg = deepMerge(clone(DEFAULTS), p); toForm();
-      pBox.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  function renderPresets(filePresets = []) {
+    pBox.innerHTML = '';
+    const all = [...filePresets.map(p => [p.label, p.config, p.description, true]),
+                 ...Object.entries(PRESETS).map(([l, c]) => [l, c, '', false])];
+    all.forEach(([label, p, desc, fromFile]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+      if (desc) b.title = desc;
+      if (fromFile) b.classList.add('filepreset');
+      b.addEventListener('click', () => {
+        cfg = deepMerge(clone(DEFAULTS), p); toForm(); syncBinary();
+        pBox.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+      });
+      pBox.appendChild(b);
     });
-    pBox.appendChild(b);
+  }
+  renderPresets();
+
+  // ---- drone / no-drone helper: total + drone share -> drone count and MAD clips per label
+  const mappedLabels = () => Object.entries(cfg.mad.mapping).filter(([, c]) => c !== 'skip').map(([id]) => id);
+  function syncBinary() {
+    const labels = mappedLabels();
+    const neg = cfg.mad.enabled ? labels.length * (+cfg.mad.max_per_label || 0) : 0;
+    const extra = ['vehicle_mechanical', 'explosion', 'ambient_outdoor'].reduce((a, k) => a + (+cfg.counts[k] || 0), 0);
+    const pos = +cfg.counts.drone_buzz || 0;
+    $('binNow').textContent = `Now: ${pos} drone · ${neg + extra} no-drone` + (cfg.mad.max_per_label ? '' : ' (MAD uncapped, see table)');
+  }
+  $('binApply').addEventListener('click', () => {
+    const total = Math.max(2, +$('binTotal').value || 200), share = Math.min(0.95, Math.max(0.05, +$('binShare').value || 0.5));
+    const heli = $('binNoHeli').checked;
+    if (heli) cfg.mad.mapping['5'] = 'skip';
+    cfg.mad.mapping['0'] = 'skip';
+    cfg.mad.enabled = true;
+    const labels = mappedLabels();
+    if (!labels.length) return err('Map at least one MAD label to a class first.');
+    const pos = Math.round(total * share), perLabel = Math.max(1, Math.round((total - pos) / labels.length));
+    cfg.counts = {drone_buzz: pos, vehicle_mechanical: 0, explosion: 0, ambient_outdoor: 0};
+    cfg.mad.max_per_label = perLabel;
+    cfg.mad.short_clips = 'skip';
+    cfg.mad.test_split = false;
+    cfg.mad.as_drone_background = true;
+    cfg.mix.real_background_prob = 1.0;
+    cfg.mix.use_challenge_backgrounds = !$('binMadOnly').checked;
+    cfg.include_real = false;
+    cfg.name = `drone_vs_nodrone_${pos + perLabel * labels.length}`;
+    toForm(); syncBinary();
   });
   buildMapTable();
 
@@ -753,6 +807,8 @@ print(out.shape)   # (220500, 4)</pre>
       server = true; DEFAULTS = s.defaults; cfg = clone(DEFAULTS);
       MAD_LABELS = s.mad_labels || MAD_LABELS; MAD_COUNTS = s.mad_counts || {};
       DRONE_TYPES = s.drone_types || DRONE_TYPES;
+      renderPresets(s.presets || []);
+      $('specSrc').textContent = s.spectrogram_source || '';
       buildMapTable();
       if (!s.mad_found) $('estHint').textContent = 'MAD_dataset/ was not found next to synth/. Only synthetic clips can be generated.';
       $('status').textContent = `Local server connected · acoular ${s.acoular ? 'available' : 'not installed (numpy engine only)'}`;
