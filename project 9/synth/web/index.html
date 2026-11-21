@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drone Sound Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: field-instrument notebook. Dataset builder first, then generated datasets, live synth, library notes, Acoular flyby bench. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --fg:#17202a; --muted:#5a6775; --line:#d6dde4;
+  --accent:#c2620a; --accent-soft:#fbeadb; --sig:#1f6fb2; --ok:#2e7d4f; --no:#a3333d; --code:#eef2f5;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f151b; --panel:#171f27; --fg:#e4e9ee; --muted:#93a1ae; --line:#2a3540;
+  --accent:#f0954a; --accent-soft:#3a2615; --sig:#6cb4ee; --ok:#6cc792; --no:#ef7f88; --code:#121a21; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;letter-spacing:.005em}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 16px 72px;display:grid;gap:48px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:.01em}
+h1{font-size:clamp(30px,5vw,44px);line-height:1.05}
+h2{font-size:24px;margin-bottom:6px}
+h3{font-size:18px}
+p{margin:0;max-width:70ch}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+header{display:grid;gap:10px}
+nav{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+code,pre{font-family:var(--f-mono);font-size:13px}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+a{color:var(--sig)}
+button{font:500 14px var(--f-body);border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:8px 14px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+input[type=number],input[type=text],select{font:14px var(--f-mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.status{font-family:var(--f-mono);font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);justify-self:start}
+.status.on{border-color:var(--ok);color:var(--ok)}
+.status.off{border-color:var(--accent);color:var(--accent)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;margin:8px 0 0;line-height:1.5}
+
+/* Builder */
+.builder{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.form{padding:20px;display:grid;gap:22px;border-right:1px solid var(--line)}
+.side{padding:20px;display:grid;gap:16px;align-content:start;min-width:0}
+fieldset{border:0;padding:0;margin:0;display:grid;gap:10px}
+legend{font-family:var(--f-mono);font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:0;margin-bottom:8px}
+.presets{display:flex;gap:6px;flex-wrap:wrap}
+.presets button{font-size:13px;padding:6px 10px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.field{display:grid;gap:4px;min-width:0}
+.field>label,.field>span{font-size:13px;color:var(--muted)}
+.range{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center}
+.range i{color:var(--muted);font-style:normal;font-size:12px}
+.hint{font-size:12px;color:var(--muted)}
+.check{display:flex;gap:8px;align-items:center;font-size:14px}
+.total{font-family:var(--f-mono);font-size:13px}
+.progress{height:8px;background:var(--code);border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--accent);transition:width .3s}
+.prev img{width:100%;max-width:224px;image-rendering:pixelated;border-radius:4px;border:1px solid var(--line);display:block}
+.prevrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start}
+.kv{font-family:var(--f-mono);font-size:12px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere}
+audio{width:100%}
+.err{color:var(--no);font-size:13px}
+.maptable,.est{min-width:0;font-size:13px}
+.maptable td,.maptable th,.est td,.est th{padding:6px 8px}
+.maptable select{width:auto}
+.est td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.est td small{color:var(--muted)}
+.tag-src{font-size:11px;color:var(--muted)}
+
+/* Datasets */
+.dsl{display:grid;gap:12px}
+.ds{padding:16px;display:grid;gap:10px}
+.ds .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:99px;background:var(--code);border:1px solid var(--line)}
+.samples{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:12px}
+.sample{display:grid;gap:6px;font-size:12px;font-family:var(--f-mono)}
+.sample img{width:100%;max-width:200px;aspect-ratio:1;border-radius:4px;border:1px solid var(--line)}
+.cmd{display:flex;gap:6px;align-items:center}
+.cmd code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;padding:6px 8px}
+.copy{padding:4px 9px;font-size:12px}
+a.dl{display:inline-flex;align-items:center;gap:6px;font:500 13px var(--f-body);text-decoration:none;color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:6px 12px;background:var(--panel);justify-self:start}
+a.dl::before{content:"↓";color:var(--accent);font-weight:600}
+a.dl.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+a.dl.primary::before{color:#fff}
+a.dl:hover{border-color:var(--accent)}
+
+/* Synth */
+.synth{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);overflow:hidden}
+.controls{padding:20px;display:grid;gap:14px;border-right:1px solid var(--line);align-content:start}
+.ctl{display:grid;gap:4px}
+.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.ctl output{font-family:var(--f-mono);color:var(--fg);font-variant-numeric:tabular-nums}
+.scope{padding:16px 16px 12px;display:grid;gap:8px;min-width:0}
+.readouts{display:flex;flex-wrap:wrap;gap:18px;font-family:var(--f-mono);font-size:13px}
+.readouts b{display:block;font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.readouts span{color:var(--muted)}
+canvas{width:100%;height:220px;display:block;background:var(--code);border-radius:6px}
+.track{position:relative;height:30px;border-bottom:1px dashed var(--line)}
+.track .mic{position:absolute;left:50%;bottom:-6px;width:10px;height:10px;margin-left:-5px;background:var(--sig);border-radius:2px}
+.track .drone{position:absolute;top:2px;left:0;font-family:var(--f-mono);font-size:12px;color:var(--accent);transform:translateX(-50%);white-space:nowrap}
+
+/* Libraries */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:16px}
+.card{padding:18px;display:grid;gap:10px;align-content:start}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tag{font-family:var(--f-mono);font-size:11px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.v{border-color:var(--ok);color:var(--ok)}
+.tag.best{border-color:var(--accent);color:var(--accent)}
+details summary{cursor:pointer;font-size:13px;color:var(--sig)}
+.links{font-size:13px;display:flex;gap:14px;flex-wrap:wrap}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+td.y{color:var(--ok)} td.n{color:var(--no)} td.p{color:var(--accent)}
+
+/* Flyby */
+.bench{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding:20px}
+.clips{display:grid;gap:14px;align-content:start}
+.clip{display:grid;gap:4px}
+.clip strong{font-size:14px}
+svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.codehead{display:flex;justify-content:space-between;align-items:center;padding:12px 20px 0}
+.fullcode pre{margin:8px 20px 20px;max-height:520px}
+
+@media (max-width:820px){
+  .builder,.synth,.bench{grid-template-columns:1fr}
+  .form,.controls{border-right:0;border-bottom:1px solid var(--line)}
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:440px){.grid3{grid-template-columns:1fr 1fr}.prevrow{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Challenge 5 · acoustic C-UAS · synthetic data</div>
+  <h1>Drone Sound Toolkit</h1>
+  <p class="muted">Build 5-second FLAC training sets from the MAD military audio recordings, mapped onto the challenge's four classes, plus synthetic drones mixed over real backgrounds. Each dataset is written in the challenge's own folder layout, with matching 224×224 log-mel spectrograms, so the starter-kit trainer reads it unchanged. Below the builder you'll find a live rotor synth, notes on the libraries, and the Acoular flyby reference.</p>
+  <span class="status" id="status">Checking for local server…</span>
+  <nav><a href="#builder">Dataset builder</a><a href="#datasets">Generated datasets</a><a href="#synth">Rotor synth</a><a href="#libraries">Libraries</a><a href="#flyby">Acoular flyby</a></nav>
+</header>
+
+<!-- ============================================================ BUILDER -->
+<section id="builder">
+  <h2>Dataset builder</h2>
+  <p class="muted" style="margin-bottom:14px">MAD has no drones, so its recordings supply the three non-drone classes. <code>drone_buzz</code> comes from the synthesizer: each clip randomizes the drone, its flight and the mix, and is laid over a real non-drone recording. MAD <code>training</code> and the synthetic clips go into <code>train/</code>. MAD <code>test</code> becomes a held-out <code>mad_test/</code> split. The real challenge <code>valid/</code> split is copied in unchanged so the trainer still picks its threshold on real data.</p>
+  <div class="panel builder">
+    <form class="form" id="cfgForm" autocomplete="off">
+      <fieldset>
+        <legend>Preset</legend>
+        <div class="presets" id="presets"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>MAD recordings → challenge classes</legend>
+        <label class="check"><input type="checkbox" id="madOn" data-path="mad.enabled" data-type="bool"> Use MAD_dataset</label>
+        <div class="tablewrap"><table class="maptable">
+          <thead><tr><th>MAD label</th><th>Train clips</th><th>Test clips</th><th>Challenge class</th></tr></thead>
+          <tbody id="mapBody"></tbody>
+        </table></div>
+        <div class="grid3">
+          <div class="field"><label for="madCap">Max clips per MAD label</label><input id="madCap" type="number" min="0" step="50" data-path="mad.max_per_label"><span class="hint">0 uses every clip.</span></div>
+          <div class="field"><label for="madWin">5 s windows per long clip</label><input id="madWin" type="number" min="1" max="4" data-path="mad.windows_per_clip"><span class="hint">MAD clips run 2–10 s.</span></div>
+          <div class="field"><label for="madShort">Clips shorter than 5 s</label><select id="madShort" data-path="mad.short_clips" data-type="str"><option value="pad">Pad over a quiet real background</option><option value="skip">Skip</option></select></div>
+        </div>
+        <label class="check"><input type="checkbox" id="madTest" data-path="mad.test_split" data-type="bool"> Add MAD test as a held-out <code>mad_test/</code> split</label>
+        <label class="check"><input type="checkbox" id="madBg" data-path="mad.as_drone_background" data-type="bool"> Use MAD recordings as backgrounds under synthetic drones</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Synthetic clips per class</legend>
+        <div class="grid4">
+          <div class="field"><label for="c_drone">drone_buzz</label><input id="c_drone" type="number" min="0" step="10" data-path="counts.drone_buzz"></div>
+          <div class="field"><label for="c_vehicle">vehicle_mechanical</label><input id="c_vehicle" type="number" min="0" step="10" data-path="counts.vehicle_mechanical"></div>
+          <div class="field"><label for="c_explosion">explosion</label><input id="c_explosion" type="number" min="0" step="10" data-path="counts.explosion"></div>
+          <div class="field"><label for="c_ambient">ambient_outdoor</label><input id="c_ambient" type="number" min="0" step="10" data-path="counts.ambient_outdoor"></div>
+        </div>
+        <div class="grid3">
+          <div class="field"><label for="name">Dataset name</label><input id="name" type="text" data-path="name" data-type="str"></div>
+          <div class="field"><label for="seed">Seed</label><input id="seed" type="number" min="0" data-path="seed"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Drone</legend>
+        <div class="grid3">
+          <div class="field"><label for="rotors">Rotor counts</label><input id="rotors" type="text" data-path="drone.rotors" data-type="list"><span class="hint">Sampled from this list. Repeat a value to weight it.</span></div>
+          <div class="field"><label for="blades">Blade counts</label><input id="blades" type="text" data-path="drone.blades" data-type="list"></div>
+          <div class="field"><span>RPM</span><div class="range"><input aria-label="RPM min" type="number" step="100" data-path="drone.rpm" data-idx="0"><i>to</i><input aria-label="RPM max" type="number" step="100" data-path="drone.rpm" data-idx="1"></div></div>
+          <div class="field"><span>RPM spread between rotors, %</span><div class="range"><input aria-label="spread min" type="number" step="0.1" data-path="drone.rpm_spread_pct" data-idx="0"><i>to</i><input aria-label="spread max" type="number" step="0.1" data-path="drone.rpm_spread_pct" data-idx="1"></div></div>
+          <div class="field"><span>Throttle jitter, %</span><div class="range"><input aria-label="jitter min" type="number" step="0.1" data-path="drone.rpm_jitter_pct" data-idx="0"><i>to</i><input aria-label="jitter max" type="number" step="0.1" data-path="drone.rpm_jitter_pct" data-idx="1"></div></div>
+          <div class="field"><span>Harmonics</span><div class="range"><input aria-label="harmonics min" type="number" data-path="drone.harmonics" data-idx="0"><i>to</i><input aria-label="harmonics max" type="number" data-path="drone.harmonics" data-idx="1"></div></div>
+          <div class="field"><span>Hiss level</span><div class="range"><input aria-label="hiss min" type="number" step="0.05" data-path="drone.hiss" data-idx="0"><i>to</i><input aria-label="hiss max" type="number" step="0.05" data-path="drone.hiss" data-idx="1"></div></div>
+          <div class="field"><span>Motor whine</span><div class="range"><input aria-label="whine min" type="number" step="0.05" data-path="drone.motor_whine" data-idx="0"><i>to</i><input aria-label="whine max" type="number" step="0.05" data-path="drone.motor_whine" data-idx="1"></div></div>
+          <div class="field"><span>Harmonic roll-off</span><div class="range"><input aria-label="rolloff min" type="number" step="0.1" data-path="drone.harmonic_rolloff" data-idx="0"><i>to</i><input aria-label="rolloff max" type="number" step="0.1" data-path="drone.harmonic_rolloff" data-idx="1"></div></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Synthetic explosions and salvos</legend>
+        <p class="hint">Applies to the synthetic <code>explosion</code> clips above. A salvo is a burst of automatic fire, a rifle volley, or several artillery guns firing within a few seconds. Each shot gets a muzzle blast, a supersonic crack for small arms, distance filtering and terrain echoes.</p>
+        <div class="grid3">
+          <div class="field"><label for="salvoP">Salvo share</label><input id="salvoP" type="number" min="0" max="1" step="0.05" data-path="explosion.salvo_prob"><span class="hint">The rest are single blasts.</span></div>
+          <div class="field"><span>Rounds per burst</span><div class="range"><input aria-label="rounds min" type="number" min="1" data-path="explosion.rounds" data-idx="0"><i>to</i><input aria-label="rounds max" type="number" min="1" data-path="explosion.rounds" data-idx="1"></div></div>
+          <div class="field"><span>Fire rate, rounds/min</span><div class="range"><input aria-label="rate min" type="number" step="50" data-path="explosion.burst_rpm" data-idx="0"><i>to</i><input aria-label="rate max" type="number" step="50" data-path="explosion.burst_rpm" data-idx="1"></div></div>
+          <div class="field"><label for="sBurst">Automatic burst weight</label><input id="sBurst" type="number" min="0" step="0.05" data-path="explosion.salvo_types.burst"></div>
+          <div class="field"><label for="sVolley">Rifle volley weight</label><input id="sVolley" type="number" min="0" step="0.05" data-path="explosion.salvo_types.volley"></div>
+          <div class="field"><label for="sArt">Artillery salvo weight</label><input id="sArt" type="number" min="0" step="0.05" data-path="explosion.salvo_types.artillery"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Flight</legend>
+        <div class="grid3">
+          <div class="field"><label for="m_fly">Flyby weight</label><input id="m_fly" type="number" min="0" step="0.05" data-path="flight.modes.flyby"></div>
+          <div class="field"><label for="m_hov">Hover weight</label><input id="m_hov" type="number" min="0" step="0.05" data-path="flight.modes.hover"></div>
+          <div class="field"><label for="m_app">Approach weight</label><input id="m_app" type="number" min="0" step="0.05" data-path="flight.modes.approach"></div>
+          <div class="field"><span>Altitude, m</span><div class="range"><input aria-label="altitude min" type="number" data-path="flight.altitude_m" data-idx="0"><i>to</i><input aria-label="altitude max" type="number" data-path="flight.altitude_m" data-idx="1"></div></div>
+          <div class="field"><span>Lateral offset, m</span><div class="range"><input aria-label="offset min" type="number" data-path="flight.lateral_offset_m" data-idx="0"><i>to</i><input aria-label="offset max" type="number" data-path="flight.lateral_offset_m" data-idx="1"></div></div>
+          <div class="field"><span>Speed, m/s</span><div class="range"><input aria-label="speed min" type="number" data-path="flight.speed_mps" data-idx="0"><i>to</i><input aria-label="speed max" type="number" data-path="flight.speed_mps" data-idx="1"></div></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Mix</legend>
+        <div class="grid3">
+          <div class="field"><span>SNR at 30 m, dB</span><div class="range"><input aria-label="snr min" type="number" data-path="mix.snr_db_at_30m" data-idx="0"><i>to</i><input aria-label="snr max" type="number" data-path="mix.snr_db_at_30m" data-idx="1"></div><span class="hint">Lowered by 20·log10(range / 30 m).</span></div>
+          <div class="field"><span>SNR limits, dB</span><div class="range"><input aria-label="snr clip min" type="number" data-path="mix.snr_clip_db" data-idx="0"><i>to</i><input aria-label="snr clip max" type="number" data-path="mix.snr_clip_db" data-idx="1"></div></div>
+          <div class="field"><label for="rbp">Real background share</label><input id="rbp" type="number" min="0" max="1" step="0.05" data-path="mix.real_background_prob"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="ucb" data-path="mix.use_challenge_backgrounds" data-type="bool"> Use non-drone challenge train clips as backgrounds</label>
+        <label class="check"><input type="checkbox" id="incr" data-path="include_real" data-type="bool"> Copy the 48 real train clips into the dataset</label>
+        <div class="grid3">
+          <div class="field"><label for="engine">Propagation engine</label><select id="engine" data-path="engine" data-type="str"><option value="numpy">numpy (fast)</option><option value="acoular">acoular (reference)</option></select></div>
+          <div class="field"><label for="afmt">Audio format</label><select id="afmt" data-path="audio_format" data-type="str"><option value="flac">FLAC (lossless, smaller)</option><option value="wav">WAV</option></select></div>
+          <div class="field"><label for="workers">Worker processes</label><input id="workers" type="number" min="1" data-path="workers"></div>
+        </div>
+      </fieldset>
+    </form>
+
+    <div class="side">
+      <div class="btns">
+        <button class="primary" id="genBtn" type="button">Generate dataset</button>
+        <select id="prevSrc" aria-label="Preview source" style="width:auto"><option value="synthetic">Synthetic</option><option value="mad">MAD</option></select>
+        <select id="prevKind" aria-label="Class to preview" style="width:auto">
+          <option value="drone_buzz">drone_buzz</option><option value="vehicle_mechanical">vehicle_mechanical</option>
+          <option value="explosion">explosion</option><option value="ambient_outdoor">ambient_outdoor</option>
+        </select>
+        <button id="prevBtn" type="button">Preview clip</button>
+      </div>
+      <div class="field">
+        <span>Dataset contents</span>
+        <div class="tablewrap"><table class="est"><thead><tr><th>Split</th><th>drone</th><th>vehicle</th><th>explosion</th><th>ambient</th><th>Total</th></tr></thead><tbody id="estBody"><tr><td colspan="6" class="muted">Start the server to see counts.</td></tr></tbody></table></div>
+        <span class="hint" id="estHint"></span>
+      </div>
+      <div id="jobBox" hidden>
+        <div class="small" id="jobText"></div>
+        <div class="progress" style="margin-top:6px"><div id="jobBar"></div></div>
+      </div>
+      <div class="err" id="err" role="alert"></div>
+
+      <div class="prev" id="prevBox" hidden>
+        <div class="prevrow">
+          <img id="prevImg" alt="Log-mel spectrogram of the preview clip" width="224" height="224">
+          <dl class="kv" id="prevKv"></dl>
+        </div>
+        <audio id="prevAudio" controls style="margin-top:10px"></audio>
+        <div class="btns" style="margin-top:6px"><a class="dl" id="prevDl" href="#" download>Download clip</a></div>
+      </div>
+
+      <div id="staticBox" hidden>
+        <p class="small muted">This page is open without the local server, so it can't generate clips itself. Start the server with <code>python synth/server.py</code> and open <code>http://127.0.0.1:8770</code>, or run the command below.</p>
+      </div>
+      <div class="field">
+        <span>Same settings from the command line</span>
+        <div class="cmd"><code id="cliCmd"></code><button class="copy" type="button" data-copy-from="cliCmd">Copy</button></div>
+        <span class="hint">If the command ends in <code>--config</code>, save the Config JSON below under that file name first.</span>
+      </div>
+      <details>
+        <summary>Config JSON</summary>
+        <div class="btns" style="margin-top:8px"><button class="copy" type="button" data-copy-from="cfgJson">Copy JSON</button></div>
+        <pre id="cfgJson"></pre>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ DATASETS -->
+<section id="datasets">
+  <h2>Generated datasets</h2>
+  <p class="muted" style="margin-bottom:14px">Datasets are saved in <code>synth/out/</code>, which git ignores. Each has one sample clip per class and the command to train on it.</p>
+  <div class="dsl" id="dsList"><div class="panel ds muted small">No datasets yet. Pick a preset and click Generate dataset. Quick test takes a few seconds.</div></div>
+</section>
+
+<!-- ============================================================ SYNTH -->
+<section id="synth">
+  <h2>Rotor synth</h2>
+  <p class="muted" style="margin-bottom:14px">Uses the same model as the generator: each rotor produces its blade-pass frequency plus harmonics, and broadband noise sits underneath. Flyby adds Doppler shift and 1/r loudness drop for a straight pass 30&nbsp;m overhead.</p>
+  <div class="panel synth">
+    <div class="controls">
+      <div class="ctl"><label for="rpm">Base RPM <output id="rpmO">5200</output></label><input id="rpm" type="range" min="2000" max="12000" step="50" value="5200"></div>
+      <div class="ctl"><label for="sblades">Blades per rotor <output id="bladesO">2</output></label><input id="sblades" type="range" min="2" max="4" step="1" value="2"></div>
+      <div class="ctl"><label for="srotors">Rotors <output id="rotorsO">4</output></label><input id="srotors" type="range" min="1" max="8" step="1" value="4"></div>
+      <div class="ctl"><label for="spread">RPM spread between rotors <output id="spreadO">1.5%</output></label><input id="spread" type="range" min="0" max="5" step="0.1" value="1.5"></div>
+      <div class="ctl"><label for="jitter">Throttle jitter <output id="jitterO">40</output></label><input id="jitter" type="range" min="0" max="200" step="5" value="40"></div>
+      <div class="ctl"><label for="hiss">Broadband hiss <output id="hissO">0.30</output></label><input id="hiss" type="range" min="0" max="1" step="0.05" value="0.3"></div>
+      <div class="ctl"><label for="speed">Flyby speed <output id="speedO">15 m/s</output></label><input id="speed" type="range" min="5" max="40" step="1" value="15"></div>
+      <div class="btns">
+        <button id="play" class="primary" type="button">Start sound</button>
+        <button id="fly" type="button" aria-pressed="false">Run flyby</button>
+      </div>
+    </div>
+    <div class="scope">
+      <div class="readouts">
+        <div><span>BPF</span><b id="bpf">173 Hz</b></div>
+        <div><span>Doppler</span><b id="dop">×1.000</b></div>
+        <div><span>Range</span><b id="rng">— m</b></div>
+      </div>
+      <canvas id="spec" aria-label="Live spectrum, 50 Hz to 6 kHz, log scale"></canvas>
+      <div class="track" aria-hidden="true"><div class="mic"></div><div class="drone" id="droneMark">▲ drone</div></div>
+      <div class="muted" style="font-size:12px;font-family:var(--f-mono)">Spectrum shown on a log scale, 50 Hz to 6 kHz. Orange ticks mark the BPF harmonics.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ LIBRARIES -->
+<section id="libraries">
+  <h2>Libraries</h2>
+  <p class="muted" style="margin-bottom:14px">A <span class="tag v">verified</span> tag means the snippet ran as written on 2026-11-21 (Python 3.11, macOS). The generator only needs numpy, scipy and pillow. Acoular is optional.</p>
+  <div class="cards">
+    <article class="panel card">
+      <div class="top"><h3>Acoular</h3><span><span class="tag best">best fit</span> <span class="tag v">verified 26.08</span></span></div>
+      <p>An acoustic beamforming library. Its <code>MovingPointSource</code> flies any signal along a <code>Trajectory</code> and renders what each microphone in an array hears, including Doppler shift and distance loss. To use it in the builder, select <code>engine = acoular</code>.</p>
+      <div class="cmd"><code>pip install acoular</code><button class="copy" type="button" data-copy="pip install acoular">Copy</button></div>
+      <details><summary>Short snippet</summary><pre>traj = ac.Trajectory(points={0.0: (-75, 20, 30), 10.0: (75, 20, 30)})
+src  = ac.MovingPointSource(signal=sig_gen, mics=mics,
+                            trajectory=traj, conv_amp=True)
+out  = np.concatenate(list(src.result(4096)))  # (N, n_mics)</pre></details>
+      <div class="links"><a href="https://acoular.org" target="_blank" rel="noopener">acoular.org</a><a href="#flyby">Full flyby script ↓</a></div>
+    </article>
+    <article class="panel card">
+      <div class="top"><h3>pyroomacoustics</h3><span class="tag v">verified</span></div>
+      <p>Simulates rooms and open space with microphone arrays. It's strong on reverb, reflections and DOA algorithms, but sources stay fixed in place, so a flyby means stitching together short segments.</p>
+      <div class="cmd"><code>pip install pyroomacoustics</code><button class="copy" type="button" data-copy="pip install pyroomacoustics">Copy</button></div>
+      <details><summary>Short snippet</summary><pre>room = pra.AnechoicRoom(fs=FS)        # or pra.ShoeBox(...) for reflections
+room.add_source([10.0, 5.0, 30.0], signal=dry)
+room.add_microphone_array(np.c_[[0, 0, 0], [0.5, 0, 0]])
+room.simulate()
+out = room.mic_array.signals            # (n_mics, N)</pre></details>
+      <div class="links"><a href="https://github.com/LCAV/pyroomacoustics" target="_blank" rel="noopener">GitHub</a></div>
+    </article>
+    <article class="panel card">
+      <div class="top"><h3>numpy / scipy synth</h3><span class="tag v">used here</span></div>
+      <p>A handwritten rotor model: BPF = blades × RPM / 60, harmonics for each rotor, a random walk on RPM and added noise. It's in <code>dronesynth/sources.py</code> and records exact RPM and BPF in every label row.</p>
+      <details><summary>Short snippet</summary><pre>for rpm in (5200, 5260, 5310, 5150):
+    rpm_t = rpm + 60*np.cumsum(rng.normal(0,1,N))/np.sqrt(FS)
+    phase = 2*np.pi*np.cumsum(2*rpm_t/60)/FS
+    for h in range(1, 9):
+        sig += np.sin(h*phase) / h
+sig += 0.3*rng.normal(size=N)</pre></details>
+    </article>
+    <article class="panel card">
+      <div class="top"><h3>audiomentations</h3><span class="tag v">verified</span></div>
+      <p>Augmentation at training time: SNR mixing, pitch shift to simulate other motor speeds, gain, EQ and background clips. A GPU version is available as <code>torch-audiomentations</code>.</p>
+      <div class="cmd"><code>pip install audiomentations</code><button class="copy" type="button" data-copy="pip install audiomentations">Copy</button></div>
+      <details><summary>Short snippet</summary><pre>aug = Compose([
+    PitchShift(min_semitones=-3, max_semitones=3, p=1.0),
+    AddGaussianSNR(min_snr_db=5, max_snr_db=20, p=1.0),
+    Gain(min_gain_db=-6, max_gain_db=6, p=0.5),
+])
+y = aug(samples=dry.astype(np.float32), sample_rate=FS)</pre></details>
+      <div class="links"><a href="https://github.com/iver56/audiomentations" target="_blank" rel="noopener">GitHub</a></div>
+    </article>
+    <article class="panel card">
+      <div class="top"><h3>Real recordings</h3><span class="tag">datasets</span></div>
+      <p>The MAD military audio set in <code>MAD_dataset/</code> is the main source of real non-drone audio in the builder. By default, shooting and shelling map to <code>explosion</code>; vehicles, helicopters and jets map to <code>vehicle_mechanical</code>; and footsteps map to <code>ambient_outdoor</code>. Helicopters make good hard negatives because their rotors also produce harmonics. For real drone audio, see the datasets linked here.</p>
+      <div class="links"><a href="https://github.com/saraalemadi/DroneAudioDataset" target="_blank" rel="noopener">DroneAudioDataset</a><a href="https://dregon.inria.fr" target="_blank" rel="noopener">DREGON</a></div>
+    </article>
+    <article class="panel card">
+      <div class="top"><h3>Aeroacoustic solvers</h3><span class="tag">not recommended</span></div>
+      <p>Physics-based rotor noise models such as Ffowcs Williams–Hawkings solvers or NASA ANOPP2. They're accurate, but slow, need blade geometry, and are often access-restricted.</p>
+    </article>
+  </div>
+  <div class="panel tablewrap" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Library</th><th>Rotor sound</th><th>Moving source</th><th>Doppler</th><th>Mic arrays</th><th>Reverb</th><th>Effort</th></tr></thead>
+      <tbody>
+        <tr><td><b>Acoular</b></td><td class="n">bring your own</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="p">ground reflection only</td><td>low</td></tr>
+        <tr><td><b>pyroomacoustics</b></td><td class="n">bring your own</td><td class="n">no</td><td class="n">no</td><td class="y">yes</td><td class="y">yes</td><td>low</td></tr>
+        <tr><td><b>numpy synth (this tool)</b></td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="n">single mic</td><td class="n">no</td><td>none</td></tr>
+        <tr><td><b>audiomentations</b></td><td class="n">no</td><td class="n">no</td><td class="p">pitch shift</td><td class="n">no</td><td class="p">via IR convolution</td><td>very low</td></tr>
+        <tr><td><b>Aeroacoustic solvers</b></td><td class="y">physical</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="n">no</td><td>high</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ FLYBY -->
+<section id="flyby">
+  <h2>Acoular flyby</h2>
+  <p class="muted" style="margin-bottom:14px">The reference script, also saved as <code>synth/examples/acoular_flyby.py</code>. It synthesizes a four-rotor drone, flies it past a 4-mic square array and writes a 4-channel WAV. The clips below came from this script.</p>
+  <div class="panel">
+    <div class="bench">
+      <div class="clips">
+        <div class="clip"><strong>1 · Dry synth</strong><span class="muted small">Source signal at the drone, before Acoular.</span><audio controls preload="none" src="clips/dry.flac"></audio><a class="dl" href="clips/dry.flac" download>Download .flac</a></div>
+        <div class="clip"><strong>2 · Flyby, mic 0</strong><span class="muted small">After <code>MovingPointSource</code>. Listen for the pitch drop and loudness peak as the drone passes overhead at about 5&nbsp;s.</span><audio controls preload="none" src="clips/flyby_mic0.flac"></audio><a class="dl" href="clips/flyby_mic0.flac" download>Download .flac</a></div>
+        <div class="clip"><strong>3 · Augmented</strong><span class="muted small">Clip 1 after audiomentations: pitch shift, SNR mix and gain.</span><audio controls preload="none" src="clips/augmented.flac"></audio><a class="dl" href="clips/augmented.flac" download>Download .flac</a></div>
+      </div>
+      <figure style="margin:0">
+        <svg viewBox="0 0 420 230" width="100%" role="img" aria-label="Side view of the flyby: drone travels from x equals minus 75 to plus 75 metres at 30 metres altitude over a mic array at the origin">
+          <line x1="20" y1="190" x2="400" y2="190" stroke="var(--line)" stroke-width="1.5"/>
+          <line x1="40" y1="60" x2="380" y2="60" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5"/>
+          <polygon points="380,60 368,54 368,66" fill="var(--accent)"/>
+          <circle cx="40" cy="60" r="5" fill="var(--accent)"/>
+          <text x="40" y="44" text-anchor="middle">t=0 s</text>
+          <text x="380" y="44" text-anchor="middle">t=10 s</text>
+          <text x="210" y="44" text-anchor="middle">15 m/s →</text>
+          <line x1="210" y1="60" x2="210" y2="186" stroke="var(--line)" stroke-dasharray="2 4"/>
+          <text x="216" y="128">30 m</text>
+          <rect x="203" y="184" width="14" height="8" rx="1" fill="var(--sig)"/>
+          <text x="210" y="210" text-anchor="middle">4-mic array, 0.5 m square</text>
+          <text x="40" y="210" text-anchor="middle">x = −75 m</text>
+          <text x="380" y="210" text-anchor="middle">x = +75 m</text>
+          <text x="20" y="225">Side view · lateral offset y = 20 m</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="fullcode">
+      <div class="codehead"><strong style="font-family:var(--f-mono);font-size:13px">examples/acoular_flyby.py</strong><button class="copy" type="button" data-copy-from="script">Copy script</button></div>
+<pre id="script">import acoular as ac  # import before numpy (Numba/OpenBLAS warning)
+import numpy as np, soundfile as sf
+
+FS = 22050
+DUR = 10.0
+t = np.arange(int(FS * DUR)) / FS
+
+# 1) Synthesize a quadcopter: 4 rotors, 2 blades, slightly different RPMs + jitter
+rng = np.random.default_rng(0)
+sig = np.zeros_like(t)
+for rpm in (5200, 5260, 5310, 5150):
+    rpm_t = rpm + 60 * np.cumsum(rng.normal(0, 1, t.size)) / np.sqrt(FS)  # random walk
+    phase = 2 * np.pi * np.cumsum(2 * rpm_t / 60) / FS                    # BPF phase
+    for h in range(1, 9):
+        sig += (1 / h) * np.sin(h * phase)
+sig += 0.3 * rng.normal(size=t.size)          # broadband hiss
+sig /= np.abs(sig).max()
+sf.write("dry.wav", (0.9*sig).astype(np.float32), FS, subtype="PCM_16")
+
+# 2) Mic array: 4 mics, 0.5 m square, on the ground
+mics = ac.MicGeom(pos_total=np.array([[-.25, .25, -.25, .25],
+                                      [-.25, -.25, .25, .25],
+                                      [0, 0, 0, 0]]))
+
+# 3) Straight flyby at 30 m altitude, 15 m/s
+traj = ac.Trajectory(points={0.0: (-75.0, 20.0, 30.0), DUR: (75.0, 20.0, 30.0)})
+
+src_sig = ac.GenericSignalGenerator(source=ac.TimeSamples(data=sig[:, None], sample_freq=FS))
+moving = ac.MovingPointSource(signal=src_sig, mics=mics, trajectory=traj, conv_amp=True)
+
+# 4) Pull blocks and write a 4-channel WAV (Doppler + 1/r included)
+out = np.concatenate(list(moving.result(4096)))
+out /= np.abs(out).max()
+sf.write("flyby.wav", out.astype(np.float32), FS)
+print(out.shape)   # (220500, 4)</pre>
+      <p class="muted small" style="padding:0 20px 20px">Install with <code>pip install acoular soundfile</code>. Acoular 25 and later renamed several attributes, for example <code>mpos_tot</code> → <code>pos_total</code> and <code>numsamples</code> → <code>num_samples</code>, so older tutorials may not run unchanged.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+/* ------------------------------------------------------------------ builder */
+(() => {
+  const $ = id => document.getElementById(id);
+  // Fallback defaults for static mode; replaced by the server's DEFAULT_CONFIG when it is running.
+  let DEFAULTS = {"name":"mad_drones_v1","seed":0,"sample_rate":16000,"duration_s":5.0,"engine":"numpy","audio_format":"flac","workers":4,
+    "mad":{"enabled":true,"mapping":{"0":"skip","1":"explosion","2":"ambient_outdoor","3":"explosion","4":"vehicle_mechanical","5":"vehicle_mechanical","6":"vehicle_mechanical"},
+      "max_per_label":0,"windows_per_clip":1,"short_clips":"pad","test_split":true,"as_drone_background":true},
+    "counts":{"drone_buzz":2000,"vehicle_mechanical":0,"explosion":600,"ambient_outdoor":0},
+    "drone":{"rotors":[4,4,4,6,8],"blades":[2,2,3],"rpm":[3000,9000],"rpm_spread_pct":[0.3,3.0],"rpm_jitter_pct":[0.5,4.0],
+      "harmonics":[6,14],"harmonic_rolloff":[0.6,1.4],"hiss":[0.05,0.5],"motor_whine":[0.0,0.4]},
+    "vehicle":{"engine_rpm":[700,3500]},
+    "explosion":{"salvo_prob":0.6,"salvo_types":{"burst":0.5,"volley":0.25,"artillery":0.25},"burst_rpm":[500,950],"rounds":[3,30]},
+    "flight":{"modes":{"flyby":0.6,"hover":0.25,"approach":0.15},"altitude_m":[10,120],"lateral_offset_m":[0,80],"speed_mps":[3,25]},
+    "mix":{"snr_db_at_30m":[0,25],"snr_clip_db":[-12,30],"explosion_snr_db":[0,30],"real_background_prob":0.8,
+      "use_challenge_backgrounds":true,"background_dirs":[],"peak_dbfs":[-12,-1]},
+    "include_real":true,"challenge_dir":".."};
+  let MAD_LABELS = {"0":"communication","1":"shooting","2":"footsteps","3":"shelling","4":"vehicle","5":"helicopter","6":"fighter"};
+  let MAD_COUNTS = {};
+
+  const PRESETS = {
+    "Quick test": {name:"quick_test", mad:{max_per_label:20, test_split:false}, counts:{drone_buzz:60, vehicle_mechanical:0, explosion:20, ambient_outdoor:0}},
+    "MAD full + drones + salvos": {name:"mad_full", counts:{drone_buzz:2000, vehicle_mechanical:0, explosion:600, ambient_outdoor:0}},
+    "MAD balanced": {name:"mad_balanced", mad:{max_per_label:600}, counts:{drone_buzz:1800, vehicle_mechanical:0, explosion:300, ambient_outdoor:300}},
+    "MAD ×2 windows": {name:"mad_x2", mad:{windows_per_clip:2}, counts:{drone_buzz:4000, vehicle_mechanical:0, explosion:800, ambient_outdoor:500}},
+    "Salvos only": {name:"salvos", mad:{enabled:false}, include_real:false, counts:{drone_buzz:0, vehicle_mechanical:0, explosion:500, ambient_outdoor:0}, explosion:{salvo_prob:1.0}},
+    "Synthetic only": {name:"synth_only", mad:{enabled:false}, counts:{drone_buzz:800, vehicle_mechanical:600, explosion:300, ambient_outdoor:300}},
+    "Far and faint": {name:"far_faint", counts:{drone_buzz:1000, vehicle_mechanical:400, explosion:200, ambient_outdoor:400},
+      flight:{altitude_m:[40,200], lateral_offset_m:[20,200]}, mix:{snr_db_at_30m:[-5,15], snr_clip_db:[-20,20]}},
+  };
+
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const getP = (o, path) => path.split('.').reduce((a, k) => a?.[k], o);
+  const setP = (o, path, v) => { const ks = path.split('.'); const last = ks.pop(); ks.reduce((a, k) => a[k] ??= {}, o)[last] = v; };
+  function deepMerge(dst, src) {
+    for (const [k, v] of Object.entries(src || {})) {
+      if (v && typeof v === 'object' && !Array.isArray(v) && typeof dst[k] === 'object' && !['counts', 'modes', 'salvo_types'].includes(k)) deepMerge(dst[k], v);
+      else dst[k] = clone(v);
+    }
+    return dst;
+  }
+
+  let cfg = clone(DEFAULTS), server = false;
+  let fields = [];
+  const CLS_OPTS = ['skip', 'drone_buzz', 'vehicle_mechanical', 'explosion', 'ambient_outdoor'];
+  function buildMapTable() {
+    $('mapBody').innerHTML = Object.entries(MAD_LABELS).map(([id, name]) => {
+      const c = MAD_COUNTS[id] || {};
+      return `<tr><td>${id} · ${name}</td><td>${c.training ?? '–'}</td><td>${c.test ?? '–'}</td>
+        <td><select aria-label="Class for MAD ${name}" id="map_${id}" data-path="mad.mapping.${id}" data-type="str">${CLS_OPTS.map(o => `<option value="${o}">${o === 'skip' ? 'skip (not used)' : o}</option>`).join('')}</select></td></tr>`;
+    }).join('');
+    fields = [...document.querySelectorAll('#cfgForm [data-path]')];
+    fields.forEach(el => { el.oninput = fromForm; el.onchange = fromForm; });
+  }
+
+  function toForm() {
+    fields.forEach(el => {
+      const v = getP(cfg, el.dataset.path), idx = el.dataset.idx, t = el.dataset.type;
+      if (t === 'bool') el.checked = !!v;
+      else if (t === 'list') el.value = (v || []).join(', ');
+      else if (idx !== undefined) el.value = v?.[+idx] ?? '';
+      else el.value = v ?? '';
+    });
+    render();
+  }
+  function fromForm() {
+    fields.forEach(el => {
+      const p = el.dataset.path, idx = el.dataset.idx, t = el.dataset.type;
+      if (t === 'bool') setP(cfg, p, el.checked);
+      else if (t === 'str') setP(cfg, p, el.value.trim());
+      else if (t === 'list') setP(cfg, p, el.value.split(/[,\s]+/).filter(Boolean).map(Number).filter(n => Number.isFinite(n) && n > 0));
+      else if (idx !== undefined) { const arr = clone(getP(cfg, p) || [0, 0]); arr[+idx] = +el.value; setP(cfg, p, arr); }
+      else setP(cfg, p, +el.value);
+    });
+    render();
+  }
+  let estTimer = null, estSeq = 0;
+  function scheduleEstimate() {
+    if (!server) return;
+    clearTimeout(estTimer);
+    estTimer = setTimeout(async () => {
+      const seq = ++estSeq;
+      try {
+        const e = await api('/api/estimate', {config: cfg});
+        if (seq !== estSeq) return;
+        const order = ['drone_buzz', 'vehicle_mechanical', 'explosion', 'ambient_outdoor'];
+        $('estBody').innerHTML = Object.entries(e.by_split).map(([split, cls]) => {
+          let tot = 0;
+          const cells = order.map(c => { const v = cls[c] || {mad: 0, synthetic: 0}; const t = v.mad + v.synthetic; tot += t;
+            return `<td>${t.toLocaleString()}${t ? `<br><small>${v.mad ? v.mad + ' MAD' : ''}${v.mad && v.synthetic ? ' · ' : ''}${v.synthetic ? v.synthetic + ' syn' : ''}</small>` : ''}</td>`; }).join('');
+          return `<tr><td>${split}</td>${cells}<td><b>${tot.toLocaleString()}</b></td></tr>`;
+        }).join('') || '<tr><td colspan="6" class="muted">Nothing to generate. Map at least one MAD label or add synthetic clips.</td></tr>';
+        const mb = Math.round(e.total * 0.115);
+        $('estHint').textContent = `${e.total.toLocaleString()} clips to render, about ${mb.toLocaleString()} MB of FLAC. ` +
+          (e.real_train ? `Plus ${e.real_train} real challenge train clips. ` : '') + `valid/ holds the ${e.valid} real challenge valid clips.`;
+      } catch (x) { $('estHint').textContent = x.message; }
+    }, 250);
+  }
+  function cli() {
+    const c = cfg.counts;
+    let s = `python synth/generate.py --name ${cfg.name} --drone ${c.drone_buzz} --vehicle ${c.vehicle_mechanical} --explosion ${c.explosion} --ambient ${c.ambient_outdoor} --seed ${cfg.seed} --engine ${cfg.engine}`;
+    if (!cfg.mad.enabled) s += ' --no-mad';
+    else {
+      if (+cfg.mad.max_per_label) s += ` --mad-per-class ${cfg.mad.max_per_label}`;
+      if (+cfg.mad.windows_per_clip > 1) s += ` --windows ${cfg.mad.windows_per_clip}`;
+    }
+    if (!cfg.include_real) s += ' --no-real';
+    if (cfg.audio_format === 'wav') s += ' --format wav';
+    const d = clone(DEFAULTS), pick = o => JSON.stringify({drone: o.drone, flight: o.flight, mix: o.mix, ex: o.explosion, map: o.mad.mapping, sc: o.mad.short_clips, ts: o.mad.test_split, bg: o.mad.as_drone_background});
+    const diff = pick(cfg) !== pick(d);
+    if (diff) s += ` --config ${cfg.name}.json`;
+    return s;
+  }
+  function render() {
+    scheduleEstimate();
+    $('cliCmd').textContent = cli();
+    $('cfgJson').textContent = JSON.stringify(cfg, null, 2);
+  }
+
+  const pBox = $('presets');
+  Object.entries(PRESETS).forEach(([label, p]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    b.addEventListener('click', () => {
+      cfg = deepMerge(clone(DEFAULTS), p); toForm();
+      pBox.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    });
+    pBox.appendChild(b);
+  });
+  buildMapTable();
+
+  // copy buttons
+  function copy(text, btn) {
+    const done = () => { const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = o, 1200); };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done).catch(() => {});
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-copy],[data-copy-from]'); if (!b) return;
+    copy(b.dataset.copy ?? $(b.dataset.copyFrom).textContent, b);
+  });
+
+  const err = m => { $('err').textContent = m || ''; };
+
+  async function api(path, body) {
+    const r = await fetch(path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {});
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || `Request failed (${r.status})`);
+    return j;
+  }
+
+  $('prevBtn').addEventListener('click', async () => {
+    if (!server) return err('Preview needs the local server. Run python synth/server.py.');
+    err(); $('prevBtn').disabled = true; $('prevBtn').textContent = 'Rendering…';
+    try {
+      const j = await api('/api/preview', {config: cfg, kind: $('prevKind').value, source: $('prevSrc').value});
+      $('prevImg').src = 'data:image/png;base64,' + j.png;
+      const url = 'data:' + j.mime + ';base64,' + j.audio;
+      $('prevAudio').src = url;
+      $('prevDl').href = url;
+      $('prevDl').download = `${j.params.kind}_${j.params.seed}.${j.format}`;
+      $('prevDl').textContent = `Download .${j.format}`;
+      $('prevKv').innerHTML = Object.entries(j.params).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+      $('prevBox').hidden = false;
+      $('prevAudio').play().catch(() => {});
+    } catch (e) { err(e.message); }
+    finally { $('prevBtn').disabled = false; $('prevBtn').textContent = 'Preview clip'; }
+  });
+
+  let polling = null;
+  $('genBtn').addEventListener('click', async () => {
+    if (!server) return err('Generating from the page needs the local server. Copy the command instead, or run python synth/server.py.');
+    err();
+    try {
+      const { id } = await api('/api/datasets', {config: cfg});
+      $('genBtn').disabled = true; $('jobBox').hidden = false;
+      polling = setInterval(() => pollJob(id), 500); pollJob(id);
+    } catch (e) { err(e.message); }
+  });
+  async function pollJob(id) {
+    const jobs = await api('/api/jobs').catch(() => []);
+    const j = jobs.find(x => x.id === id); if (!j) return;
+    const pct = j.total ? Math.round(j.done / j.total * 100) : 0;
+    $('jobBar').style.width = pct + '%';
+    $('jobText').textContent = j.state === 'running' ? `Generating ${j.name}: ${j.done} of ${j.total} clips` :
+      j.state === 'done' ? `Generated ${j.name}: ${j.manifest.mad_clips} MAD + ${j.manifest.synthetic_clips} synthetic clips in ${j.manifest.seconds} s` : `Generation failed: ${j.error}`;
+    if (j.state !== 'running') {
+      clearInterval(polling); $('genBtn').disabled = false;
+      if (j.state === 'error') err(j.error);
+      loadDatasets();
+    }
+  }
+
+  async function loadDatasets() {
+    if (!server) return;
+    const list = await api('/api/datasets').catch(() => []);
+    const box = $('dsList');
+    if (!list.length) return;
+    box.innerHTML = '';
+    list.forEach(d => {
+      const el = document.createElement('article'); el.className = 'panel ds';
+      const splits = d.splits ? Object.entries(d.splits).map(([s, v]) => `<span class="chip"><b>${s}</b> ${v.total}: ${Object.entries(v.classes).filter(([, n]) => n).map(([c, n]) => `${c.split('_')[0]} ${n}`).join(' · ')}</span>`).join('')
+        : Object.entries(d.counts).map(([k, v]) => `<span class="chip">${k} ${v}</span>`).join('');
+      const train = `cd starter-kit && python train_audio_cnn_axelera.py --challenge-dir ../${d.path} --epochs 12 --calibration-dir ../calibration_spectrograms --output-dir runs/${d.name}`;
+      const cid = 'tr_' + d.name.replace(/[^a-z0-9_-]/gi, '');
+      el.innerHTML = `
+        <div class="top"><h3>${d.name}</h3><span class="muted small">${d.created} · ${d.seconds} s · <code>${d.path}</code></span></div>
+        <div class="chips">${splits}</div>
+        <div class="samples">${d.samples.map(s => `<div class="sample"><img loading="lazy" src="${s.png}" alt="${s.class} spectrogram"><span>${s.class} <span class="tag-src">${s.source || ''}</span></span><audio controls preload="none" src="${s.audio}"></audio><a class="dl" href="${s.audio}" download>Download .${s.audio.split('.').pop()}</a></div>`).join('')}</div>
+        <div class="btns"><a class="dl primary" href="${d.download_all}" download>Download dataset (.zip)</a><a class="dl" href="${d.download_audio}" download>Audio + labels only (.zip)</a><span class="muted small">${(d.audio_format || 'wav').toUpperCase()} audio, PNG spectrograms, labels.jsonl</span></div>
+        <div class="cmd"><code id="${cid}">${train}</code><button class="copy" type="button" data-copy-from="${cid}">Copy</button></div>`;
+      box.appendChild(el);
+    });
+  }
+
+  (async () => {
+    try {
+      const s = await api('/api/status');
+      server = true; DEFAULTS = s.defaults; cfg = clone(DEFAULTS);
+      MAD_LABELS = s.mad_labels || MAD_LABELS; MAD_COUNTS = s.mad_counts || {};
+      buildMapTable();
+      if (!s.mad_found) $('estHint').textContent = 'MAD_dataset/ was not found next to synth/. Only synthetic clips can be generated.';
+      $('status').textContent = `Local server connected · acoular ${s.acoular ? 'available' : 'not installed (numpy engine only)'}`;
+      $('status').className = 'status on';
+      if (!s.acoular) $('engine').querySelector('[value=acoular]').disabled = true;
+      loadDatasets();
+    } catch {
+      $('status').textContent = 'Static mode: start python synth/server.py to generate from this page';
+      $('status').className = 'status off';
+      $('staticBox').hidden = false;
+    }
+    toForm();
+  })();
+})();
+
+/* ------------------------------------------------------------------ rotor synth */
+(() => {
+  const $ = id => document.getElementById(id);
+  const C = 343, H = 8;
+  let ctx, master, noiseGain, analyser, rotors = [], dopplerSrc, flyStart = null;
+  const P = () => ({ rpm: +$('rpm').value, blades: +$('sblades').value, n: +$('srotors').value,
+    spread: +$('spread').value / 100, jitter: +$('jitter').value, hiss: +$('hiss').value, speed: +$('speed').value });
+
+  function readouts() {
+    const p = P();
+    $('rpmO').textContent = p.rpm; $('bladesO').textContent = p.blades; $('rotorsO').textContent = p.n;
+    $('spreadO').textContent = (p.spread * 100).toFixed(1) + '%'; $('jitterO').textContent = p.jitter;
+    $('hissO').textContent = p.hiss.toFixed(2); $('speedO').textContent = p.speed + ' m/s';
+    $('bpf').textContent = Math.round(p.blades * p.rpm / 60) + ' Hz';
+  }
+  const f0For = (p, i) => p.blades * p.rpm * (1 + (p.n > 1 ? (i / (p.n - 1) - 0.5) * 2 * p.spread : 0)) / 60;
+
+  function build() {
+    rotors.forEach(r => { r.oscs.forEach(o => o.stop()); r.jit.stop(); });
+    rotors = [];
+    const p = P(), t = ctx.currentTime;
+    for (let i = 0; i < p.n; i++) {
+      const f0 = f0For(p, i);
+      const jit = ctx.createConstantSource(); jit.offset.value = 0; jit.start();
+      const oscs = [];
+      for (let h = 1; h <= H; h++) {
+        const o = ctx.createOscillator(); o.frequency.value = f0 * h;
+        const g = ctx.createGain(); g.gain.value = 0.5 / h / p.n;
+        jit.connect(o.detune); dopplerSrc.connect(o.detune);
+        o.connect(g).connect(master); o.start(t); oscs.push(o);
+      }
+      rotors.push({ oscs, jit });
+    }
+    noiseGain.gain.setTargetAtTime(p.hiss * 0.25, t, 0.05);
+  }
+  function retune() {
+    if (!ctx) return;
+    const p = P(), t = ctx.currentTime;
+    if (rotors.length !== p.n) return build();
+    rotors.forEach((r, i) => r.oscs.forEach((o, h) => o.frequency.setTargetAtTime(f0For(p, i) * (h + 1), t, 0.05)));
+    noiseGain.gain.setTargetAtTime(p.hiss * 0.25, t, 0.05);
+  }
+  function start() {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = 0.5;
+    const out = ctx.createGain(); out.gain.value = 0.6;
+    analyser = ctx.createAnalyser(); analyser.fftSize = 8192; analyser.smoothingTimeConstant = 0.75;
+    master.connect(out); out.connect(analyser); analyser.connect(ctx.destination);
+    dopplerSrc = ctx.createConstantSource(); dopplerSrc.offset.value = 0; dopplerSrc.start();
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const ns = ctx.createBufferSource(); ns.buffer = buf; ns.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2500; bp.Q.value = 0.5;
+    noiseGain = ctx.createGain(); ns.connect(bp).connect(noiseGain).connect(master); ns.start();
+    build();
+    setInterval(() => {
+      const p = P(), t = ctx.currentTime;
+      rotors.forEach(r => {
+        const c = (r.lastC || 0) * 0.9 + (Math.random() - 0.5) * p.jitter * 0.6;
+        r.lastC = Math.max(-p.jitter, Math.min(p.jitter, c));
+        r.jit.offset.setTargetAtTime(r.lastC, t, 0.08);
+      });
+    }, 80);
+    draw();
+  }
+  $('play').addEventListener('click', async () => {
+    if (!ctx) { start(); $('play').textContent = 'Stop sound'; return; }
+    if (ctx.state === 'running') { await ctx.suspend(); $('play').textContent = 'Start sound'; }
+    else { await ctx.resume(); $('play').textContent = 'Stop sound'; }
+  });
+  $('fly').addEventListener('click', () => {
+    if (!ctx) { start(); $('play').textContent = 'Stop sound'; }
+    else if (ctx.state !== 'running') { ctx.resume(); $('play').textContent = 'Stop sound'; }
+    flyStart = ctx.currentTime; $('fly').setAttribute('aria-pressed', 'true');
+  });
+  ['rpm', 'sblades', 'srotors', 'spread', 'jitter', 'hiss', 'speed'].forEach(id => $(id).addEventListener('input', () => { readouts(); retune(); }));
+  readouts();
+
+  function flyState() {
+    if (flyStart === null) return null;
+    const p = P(), L = 75, dur = 2 * L / p.speed, e = ctx.currentTime - flyStart;
+    if (e > dur) { flyStart = null; $('fly').setAttribute('aria-pressed', 'false'); return null; }
+    const x = -L + p.speed * e, r = Math.hypot(x, 20, 30), vr = p.speed * x / r;
+    return { r, fac: C / (C + vr), frac: e / dur };
+  }
+  const cv = $('spec'), g2 = cv.getContext('2d');
+  function draw() {
+    requestAnimationFrame(draw);
+    const t = ctx.currentTime, fs = flyState();
+    if (fs) {
+      dopplerSrc.offset.setTargetAtTime(1200 * Math.log2(fs.fac), t, 0.03);
+      master.gain.setTargetAtTime(0.5 * Math.min(1, 36 / fs.r), t, 0.03);
+      $('dop').textContent = '×' + fs.fac.toFixed(3); $('rng').textContent = fs.r.toFixed(0) + ' m';
+      $('droneMark').style.left = (fs.frac * 100) + '%';
+    } else {
+      dopplerSrc.offset.setTargetAtTime(0, t, 0.1); master.gain.setTargetAtTime(0.5, t, 0.1);
+      $('dop').textContent = '×1.000'; $('rng').textContent = '— m';
+    }
+    const dpr = devicePixelRatio || 1, W = cv.clientWidth * dpr, Hh = cv.clientHeight * dpr;
+    if (cv.width !== W || cv.height !== Hh) { cv.width = W; cv.height = Hh; }
+    const css = getComputedStyle(document.documentElement), v = n => css.getPropertyValue(n).trim();
+    g2.clearRect(0, 0, W, Hh);
+    const fmin = 50, fmax = 6000, lx = f => Math.log(f / fmin) / Math.log(fmax / fmin) * W;
+    g2.font = `${11 * dpr}px IBM Plex Mono, monospace`; g2.fillStyle = v('--muted'); g2.strokeStyle = v('--line'); g2.lineWidth = 1;
+    [100, 200, 500, 1000, 2000, 5000].forEach(f => { const x = lx(f); g2.beginPath(); g2.moveTo(x, 0); g2.lineTo(x, Hh); g2.stroke(); g2.fillText(f >= 1000 ? f / 1000 + 'k' : f, x + 3 * dpr, Hh - 4 * dpr); });
+    const p = P(), bpf = p.blades * p.rpm / 60 * (fs ? fs.fac : 1);
+    g2.strokeStyle = v('--accent'); g2.lineWidth = 1.5 * dpr;
+    for (let h = 1; h <= H; h++) { const x = lx(bpf * h); if (x > W) break; g2.beginPath(); g2.moveTo(x, 0); g2.lineTo(x, 8 * dpr); g2.stroke(); }
+    const bins = new Float32Array(analyser.frequencyBinCount); analyser.getFloatFrequencyData(bins);
+    const hz = ctx.sampleRate / analyser.fftSize, i0 = Math.ceil(fmin / hz);
+    g2.beginPath();
+    for (let i = i0; i < bins.length && i * hz < fmax; i++) {
+      const x = lx(i * hz), db = Math.max(-110, Math.min(-10, bins[i]));
+      const y = Hh - 18 * dpr - (db + 110) / 100 * (Hh - 26 * dpr);
+      i === i0 ? g2.moveTo(x, y) : g2.lineTo(x, y);
+    }
+    g2.strokeStyle = v('--sig'); g2.lineWidth = 1.5 * dpr; g2.stroke();
+    g2.lineTo(W, Hh); g2.lineTo(0, Hh); g2.closePath(); g2.globalAlpha = 0.12; g2.fillStyle = v('--sig'); g2.fill(); g2.globalAlpha = 1;
+  }
+})();
+</script>
+</body>
+</html>
