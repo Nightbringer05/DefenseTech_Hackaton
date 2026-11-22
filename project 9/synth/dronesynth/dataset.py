@@ -61,10 +61,15 @@ DEFAULT_CONFIG = {
         "short_clips": "pad",             # clips < 5 s: "pad" over a quiet real background, or "skip"
         "test_split": True,               # MAD test -> dataset/mad_test (held out)
         "as_drone_background": True,      # MAD clips as backgrounds under synthetic drones
+        "drone_pairs": "ambient",         # also export MAD clips with a synthetic drone over the same
+                                          # window (<id>_drone): "off", "ambient" (clips mapped to
+                                          # ambient_outdoor) or "all" (every MAD clip except vehicles)
     },
     "counts": {"drone_buzz": 2000, "vehicle_mechanical": 0, "explosion": 600, "ambient_outdoor": 0},
     "drone": {
-        "model": "simple",             # "simple": RPM ranges below; "physics": airframe types (drones.py)
+        "model": "simple",             # "simple": RPM ranges below; "physics": airframe types (drones.py);
+                                       # "recorded": windows of real drone recordings (recorded_dir)
+        "recorded_dir": "Marzena_Miesikowska/drone_only",  # relative to challenge_dir; voice files skipped
         # simple model
         "rotors": [4, 4, 4, 6, 8],     # sampled uniformly from this list (repeat to weight)
         "blades": [2, 2, 3],
@@ -108,6 +113,9 @@ DEFAULT_CONFIG = {
         "explosion_snr_db": [0, 30],
         "peak_dbfs": [-12, -1],
     },
+    "clean_drone": 0,                  # drone clips with no background at all (drone only)
+    "drone_free_twins": True,          # also export each synthetic drone clip without the drone
+                                       # (<id>_nodrone: same MAD background window, same gain)
     "include_real": True,              # copy the 48 real challenge train clips in
     "challenge_dir": "..",             # relative to the synth/ folder
 }
@@ -204,16 +212,23 @@ def background_pools(cfg, base: Path) -> dict[str, list[str]]:
            as synthetic ambient clips, and as the bed for padding short MAD clips
     """
     rows = mad_rows(cfg, base, "training")
-    return {"any": [r["path"] for r in rows],
-            "quiet": [r["path"] for r in rows if r["class"] == "ambient_outdoor"]}
+    # a vehicle and a drone never share a clip: vehicle-mapped recordings are not drone backgrounds
+    return {"any": [r["path"] for r in rows if r["class"] != "vehicle_mechanical"],
+            "quiet": [r["path"] for r in rows if r["class"] == "ambient_outdoor"],
+            "_class": {r["path"]: r["class"] for r in rows}}   # background path -> mapped class
 
 
-def _pick_background(rng, paths: list[str], n: int, sr: int, what: str):
+def _pool_sizes(pools: dict) -> dict[str, int]:
+    return {k: len(v) for k, v in pools.items() if not k.startswith("_")}
+
+
+def _pick_background(rng, paths: list[str], n: int, sr: int, what: str, with_path: bool = False):
     if not paths:
         raise ValueError(f"No MAD recordings available as {what}. Check that MAD_dataset/ exists and "
                          "that at least one MAD label is mapped (ambient_outdoor for quiet backgrounds).")
     bp = paths[int(rng.integers(len(paths)))]
-    return _crop(rng, read_audio(Path(bp), sr), n), _short(bp)
+    x = _crop(rng, read_audio(Path(bp), sr), n)
+    return (x, _short(bp), bp) if with_path else (x, _short(bp))
 
 
 # ---------------------------------------------------------------- one synthetic clip
@@ -226,7 +241,10 @@ def make_clip(cfg: dict, kind: str, seed: int, pools: dict[str, list[str]]):
     params: dict = {"kind": kind, "seed": seed}
 
     if kind == "drone_buzz":
-        bg, params["background"] = _pick_background(rng, pools["any"], n, sr, "drone backgrounds")
+        bg, params["background"], bp = _pick_background(rng, pools["any"], n, sr,
+                                                         "drone backgrounds (vehicle-mapped labels are excluded)", True)
+        cls = pools.get("_class", {}).get(bp, "ambient_outdoor")
+        params["background_class"] = cls if cls != "drone_buzz" else "ambient_outdoor"  # MAD has no drones
     else:
         bg, params["background"] = _pick_background(rng, pools["quiet"], n, sr, "quiet backgrounds")
     bg = bg / _rms(bg)
@@ -273,20 +291,65 @@ def _snr(rng, mix, min_range_m, level_db=0.0) -> float:
     return float(np.clip(rng.uniform(*mix["snr_db_at_30m"]) - dist + level_db, *mix["snr_clip_db"]))
 
 
+_REC_CACHE: dict[str, list[str]] = {}
+
+
+def recorded_files(root: str) -> list[str]:
+    """Real drone recordings under root (flac/wav), without the speech sequences (*sekwencja*)."""
+    if root not in _REC_CACHE:
+        r = Path(root)
+        _REC_CACHE[root] = sorted(str(f) for f in r.rglob("*") if f.suffix.lower() in (".flac", ".wav")
+                                  and "sekwencja" not in f.name.lower()) if r.is_dir() else []
+    return _REC_CACHE[root]
+
+
+def _recorded_root(cfg, base: Path) -> str:
+    return str((_challenge_root(cfg, base) / cfg["drone"].get("recorded_dir", "")).resolve())
+
+
+def _recorded_drone(rng, cfg, n_src):
+    """A random n_src-sample window (at cfg sample rate) of a random real drone recording."""
+    files = recorded_files(cfg["drone"].get("_recorded_root", ""))
+    if not files:
+        raise ValueError("No drone recordings found for drone model 'recorded'. Check drone.recorded_dir "
+                         f"({cfg['drone'].get('recorded_dir')}, relative to the folder holding MAD_dataset/).")
+    f = files[int(rng.integers(len(files)))]
+    info = sf.info(f)
+    need = int(np.ceil(n_src * info.samplerate / cfg["sample_rate"])) + 64
+    start = int(rng.integers(0, max(1, info.frames - need)))
+    x, rate = sf.read(f, start=start, frames=need, dtype="float32", always_2d=False)
+    if x.ndim > 1:
+        x = x.mean(axis=1)
+    if rate != cfg["sample_rate"]:
+        g = np.gcd(rate, cfg["sample_rate"])
+        x = resample_poly(x, cfg["sample_rate"] // g, rate // g).astype(np.float32)
+    x = _crop(rng, x - x.mean(), n_src)
+    stem = Path(f).stem.split("_")   # x4_d1_matrice300_5m_0m_230315[_0001]
+    p = {"drone_model": "recorded", "recording": Path(f).parent.name + "/" + Path(f).name,
+         "recording_offset_s": round(start / rate, 2)}
+    if len(stem) >= 5:
+        p.update(airframe=stem[2], drone_id=stem[1].upper(), rotors=4 if stem[0] == "x4" else 6,
+                 recorded_altitude=stem[3], recorded_distance=stem[4])
+    return x, p
+
+
 def _drone_clip(cfg, rng, bg, n, n_src, params):
     sr, dc, mix = cfg["sample_rate"], cfg["drone"], cfg["mix"]
     if dc.get("model", "simple") != "physics":
-        src, sp = sources.drone(rng, n_src, sr, dc)
+        if dc.get("model") == "recorded":
+            src, sp = _recorded_drone(rng, cfg, n_src)
+        else:
+            src, sp = sources.drone(rng, n_src, sr, dc)
         _, pos, fp = sample_trajectory(rng, cfg["duration_s"], cfg["flight"])
         params.update(fp)
         params.update(sp)
-        params["drone_model"] = "simple"
+        params.setdefault("drone_model", "simple")
         sig = propagate(src, sr, n, pos, cfg["engine"])
         params["engine"] = cfg["engine"] if (cfg["engine"] != "acoular" or acoular_available()) else "numpy"
         snr = _snr(rng, mix, fp["min_range_m"])
         params["snr_db"] = round(snr, 1)
         y = bg + sig / _rms(sig) * 10 ** (snr / 20)
-        return _finish(rng, y, mix), params
+        return _finish_pair(rng, y, bg, mix, params), params
     params["drone_model"] = "physics"
     temp = float(rng.uniform(*dc["temperature_c"]))
     elev = float(rng.uniform(*dc["elevation_m"]))
@@ -315,7 +378,7 @@ def _drone_clip(cfg, rng, bg, n, n_src, params):
     snr = _snr(rng, mix, fp["min_range_m"], level)
     params["snr_db"] = round(snr, 1)
     y = bg + sig / _rms(sig) * 10 ** (snr / 20)
-    return _finish(rng, y, mix), params
+    return _finish_pair(rng, y, bg, mix, params), params
 
 
 def _short(p: str) -> str:
@@ -329,10 +392,42 @@ def _finish(rng, y, mix):
     return (y / m * peak if m > 0 else y).astype(np.float32)
 
 
+def _finish_pair(rng, y, bg, mix, params):
+    """_finish for a drone mix; the drone-free twin (same background, same gain) goes to
+    params["_twin"]. Draws the same random numbers as _finish, so the mix itself is unchanged."""
+    peak = 10 ** (rng.uniform(*mix["peak_dbfs"]) / 20)
+    m = np.max(np.abs(y))
+    g = peak / m if m > 0 else 1.0
+    params["_twin"] = (bg * g).astype(np.float32)
+    return (y * g).astype(np.float32)
+
+
+def make_clean_drone(cfg: dict, seed: int):
+    """A drone with no background at all (same source/flight model as the mixed drones)."""
+    rng = np.random.default_rng(seed)
+    sr, n = cfg["sample_rate"], int(cfg["sample_rate"] * cfg["duration_s"])
+    params = {"kind": "drone_buzz", "seed": seed, "background": None}
+    y, params = _drone_clip(cfg, rng, np.zeros(n), n, n + int(PAD_S * sr), params)
+    params.pop("_twin", None)
+    params.pop("snr_db", None)
+    return y, params
+
+
 # ---------------------------------------------------------------- one MAD clip
 
-def make_mad_clip(cfg: dict, item: dict, seed: int, quiet: list[str]):
-    """Cut window `item['window']` of a MAD recording to exactly duration_s."""
+def wants_drone_pair(cfg: dict, item: dict) -> bool:
+    mode = cfg["mad"].get("drone_pairs", "off")
+    if item["class"] == "vehicle_mechanical":  # never a drone over a vehicle
+        return False
+    return mode == "all" or (mode == "ambient" and item["class"] == "ambient_outdoor")
+
+
+def make_mad_clip(cfg: dict, item: dict, seed: int, quiet: list[str], with_drone: bool = False):
+    """Cut window `item['window']` of a MAD recording to exactly duration_s.
+
+    with_drone: also return (drone_mix, drone_params) - a synthetic drone laid over the same
+    window. The MAD clip then gets the same output gain as the mix, so the pair differs only
+    by the drone."""
     rng = np.random.default_rng(seed)
     sr, n = cfg["sample_rate"], int(cfg["sample_rate"] * cfg["duration_s"])
     x = read_audio(Path(item["path"]), sr)
@@ -359,7 +454,12 @@ def make_mad_clip(cfg: dict, item: dict, seed: int, quiet: list[str]):
         y[start : start + len(x)] += x * win
         params["padded_from_s"] = round(len(x) / sr, 2)
         params["offset_s"] = round(start / sr, 2)
-    return _finish(rng, y, cfg["mix"]), params
+    if not with_drone:
+        return _finish(rng, y, cfg["mix"]), params
+    dp = {"kind": "drone_buzz", "seed": seed, "background": "mad:" + item["rel"],
+          "background_class": item["class"], "background_offset_s": params["offset_s"]}
+    mix, dp = _drone_clip(cfg, rng, y / _rms(y), n, n + int(PAD_S * sr), dp)
+    return dp.pop("_twin"), params, mix, dp
 
 
 # ---------------------------------------------------------------- jobs
@@ -373,16 +473,43 @@ def _write(cfg, root, split, cid, y):
 
 def _job(args):
     cfg, job, pools, root = args
+    out = []
+    if job["type"] == "clean":
+        y, params = make_clean_drone(cfg, job["seed"])
+        audio, png = _write(cfg, root, job["split"], job["id"], y)
+        return [{"id": job["id"], "split": job["split"], "audio": audio, "video": None, "spectrogram": png,
+                 "has_drone_audio": True, "sound_class": "drone_buzz", "synthetic": True,
+                 "source": "drone_only", "params": params}]
     if job["type"] == "mad":
-        y, params = make_mad_clip(cfg, job["item"], job["seed"], pools["quiet"])
+        y, params, *drone = make_mad_clip(cfg, job["item"], job["seed"], pools["quiet"],
+                                          wants_drone_pair(cfg, job["item"]))
         kind, synthetic, source = job["item"]["class"], False, "mad"
+        if drone:
+            mix, dp = drone
+            did = f'{job["id"]}_drone'
+            params["twin"], dp["twin_of"] = did, job["id"]
+            d_audio, d_png = _write(cfg, root, job["split"], did, mix)
+            out.append({"id": did, "split": job["split"], "audio": d_audio, "video": None, "spectrogram": d_png,
+                        "has_drone_audio": True, "sound_class": "drone_buzz",
+                        "synthetic": True, "source": "mad+drone", "params": dp})
     else:
         y, params = make_clip(cfg, job["kind"], job["seed"], pools)
         kind, synthetic, source = job["kind"], True, "synthetic"
+    twin = params.pop("_twin", None)
+    if twin is not None and cfg.get("drone_free_twins", True):
+        tid = f'{job["id"]}_nodrone'
+        params["twin"] = tid
+        t_audio, t_png = _write(cfg, root, job["split"], tid, twin)
+        out.append({"id": tid, "split": job["split"], "audio": t_audio, "video": None, "spectrogram": t_png,
+                    "has_drone_audio": False, "sound_class": params["background_class"],
+                    "synthetic": False, "source": "twin",
+                    "params": {"kind": params["background_class"], "twin_of": job["id"],
+                               "background": params.get("background"), "seed": job["seed"]}})
     audio, png = _write(cfg, root, job["split"], job["id"], y)
-    return {"id": job["id"], "split": job["split"], "audio": audio, "video": None, "spectrogram": png,
-            "has_drone_audio": kind == "drone_buzz", "sound_class": kind,
-            "synthetic": synthetic, "source": source, "params": params}
+    out.insert(0, {"id": job["id"], "split": job["split"], "audio": audio, "video": None, "spectrogram": png,
+                   "has_drone_audio": kind == "drone_buzz", "sound_class": kind,
+                   "synthetic": synthetic, "source": source, "params": params})
+    return out
 
 
 def _mad_jobs(cfg, base: Path, split_csv: str, out_split: str, seed0: int, cap: int) -> list[dict]:
@@ -414,6 +541,7 @@ def _mad_jobs(cfg, base: Path, split_csv: str, out_split: str, seed0: int, cap: 
 
 
 def plan(cfg, base: Path) -> tuple[list[dict], dict]:
+    cfg["drone"]["_recorded_root"] = _recorded_root(cfg, base)   # absolute, for the workers
     pools = background_pools(cfg, base)
     jobs: list[dict] = []
     i = 0
@@ -422,6 +550,9 @@ def plan(cfg, base: Path) -> tuple[list[dict], dict]:
             i += 1
             jobs.append({"type": "syn", "kind": kind, "split": "train",
                          "seed": cfg["seed"] * 1_000_003 + i, "id": f"syn_{i:06d}"})
+    for k in range(int(cfg.get("clean_drone", 0))):
+        jobs.append({"type": "clean", "kind": "drone_buzz", "split": "train",
+                     "seed": cfg["seed"] * 1_000_003 + 500_000 + k, "id": f"clean_{k + 1:06d}"})
     if cfg["mad"]["enabled"]:
         jobs += _mad_jobs(cfg, base, "training", "train", cfg["seed"] + 11, int(cfg["mad"]["max_per_label"]))
         if cfg["mad"]["test_split"]:
@@ -476,13 +607,21 @@ def write_labels(split_dir: Path, rows: list[dict]) -> None:
 def estimate(cfg: dict, base: Path) -> dict:
     """Clip counts per split/class/source without generating anything (for the UI)."""
     jobs, pools = plan(cfg, base)
-    out: dict = {"total": len(jobs), "by_split": {}, "backgrounds": {k: len(v) for k, v in pools.items()}}
+    out: dict = {"total": len(jobs), "by_split": {}, "backgrounds": _pool_sizes(pools)}
+    out["twins"] = (sum(j["type"] == "syn" and j["kind"] == "drone_buzz" for j in jobs)
+                    if cfg.get("drone_free_twins", True) else 0)
+    out["total"] += out["twins"]
+    out["mad_drone_pairs"] = 0
     for j in jobs:
         cls = j["item"]["class"] if j["type"] == "mad" else j["kind"]
         s = out["by_split"].setdefault(j["split"], {})
         key = f"{cls}"
         s.setdefault(key, {"mad": 0, "synthetic": 0})
         s[key]["mad" if j["type"] == "mad" else "synthetic"] += 1
+        if j["type"] == "mad" and wants_drone_pair(cfg, j["item"]):  # its <id>_drone copy
+            s.setdefault("drone_buzz", {"mad": 0, "synthetic": 0})["synthetic"] += 1
+            out["mad_drone_pairs"] += 1
+    out["total"] += out["mad_drone_pairs"]
     out["real_train"] = len(_challenge_rows(cfg, base, "train")) if cfg["include_real"] else 0
     out["valid"] = len(_challenge_rows(cfg, base, "valid"))
     return out
@@ -504,21 +643,24 @@ def build(cfg: dict, out_dir: Path, base: Path, progress=None) -> dict:
     total = len(jobs)
     args = [(cfg, j, pools, root) for j in jobs]
     rows: list[dict] = []
+    done = 0
     if progress:
         progress(0, total)
     workers = max(1, int(cfg.get("workers", 1)))
     if workers == 1 or total < 8:
         for a in args:
-            rows.append(_job(a))
+            rows.extend(_job(a))
+            done += 1
             if progress:
-                progress(len(rows), total)
+                progress(done, total)
     else:
         with ProcessPoolExecutor(max_workers=workers) as ex:
             futs = [ex.submit(_job, a) for a in args]
             for f in as_completed(futs):
-                rows.append(f.result())
+                rows.extend(f.result())
+                done += 1
                 if progress:
-                    progress(len(rows), total)
+                    progress(done, total)
     rows.sort(key=lambda r: (r["split"], r["source"], r["id"]))
 
     real_train = _copy_real(cfg, base, root, "train") if cfg["include_real"] else []
@@ -543,11 +685,15 @@ def build(cfg: dict, out_dir: Path, base: Path, progress=None) -> dict:
         "seconds": round(time.time() - t0, 1),
         "synthetic_clips": sum(r["synthetic"] for r in rows),
         "mad_clips": sum(r["source"] == "mad" for r in rows),
+        "twin_clips": sum(r["source"] == "twin" for r in rows),
+        "clean_drone_clips": sum(r["source"] == "drone_only" for r in rows),
+        "mad_drone_clips": sum(r["source"] == "mad+drone" for r in rows),
         "real_train_clips": len(real_train), "valid_clips": len(real_valid),
         "counts": tally(by_split["train"]),
         "splits": {s: {"total": len(rs), "classes": tally(rs)} for s, rs in by_split.items()},
-        "backgrounds_available": {k: len(v) for k, v in pools.items()},
-        "audio_format": _ext(cfg), "config": cfg,
+        "backgrounds_available": _pool_sizes(pools),
+        "audio_format": _ext(cfg),
+        "config": {**cfg, "drone": {k: v for k, v in cfg["drone"].items() if not k.startswith("_")}},
     }
     (root / "manifest.json").write_text(json.dumps(manifest, indent=2))
     _write_readme(root, manifest)
@@ -560,7 +706,9 @@ def _write_readme(root: Path, m: dict) -> None:
     if m["comment"]:
         lines += [m["comment"], ""]
     lines += [f"Created {m['created']} in {m['seconds']} s. Audio: {m['audio_format'].upper()}, 16 kHz mono, 5 s.",
-              f"Sources: {m['mad_clips']} MAD, {m['synthetic_clips']} synthetic, {m['real_train_clips']} challenge train.",
+              f"Sources: {m['mad_clips']} MAD, {m['synthetic_clips']} synthetic, {m.get('twin_clips', 0)} drone-free twins "
+              f"(<id>_nodrone: a drone clip's background without the drone), "
+              f"{m.get('mad_drone_clips', 0)} MAD clips with a drone added (<id>_drone), {m['real_train_clips']} challenge train.",
               "", "| split | total | drone_buzz | vehicle_mechanical | explosion | ambient_outdoor |",
               "|---|---|---|---|---|---|"]
     for s, v in m["splits"].items():
@@ -577,6 +725,7 @@ def preview(cfg: dict, kind: str, base: Path, seed: int | None = None, source: s
     source="mad" draws a random MAD training clip mapped to `kind` instead of synthesizing one.
     """
     seed = int(seed if seed is not None else np.random.default_rng().integers(1 << 31))
+    cfg["drone"]["_recorded_root"] = _recorded_root(cfg, base)
     pools = background_pools(cfg, base)
     if source == "mad":
         rows = [r for r in mad_rows(cfg, base, "training") if r["class"] == kind]
@@ -586,6 +735,7 @@ def preview(cfg: dict, kind: str, base: Path, seed: int | None = None, source: s
         y, params = make_mad_clip(cfg, {**r, "window": 0, "n_windows": 1}, seed, pools["quiet"])
     else:
         y, params = make_clip(cfg, kind, seed, pools)
+        params.pop("_twin", None)
     sr = cfg["sample_rate"]
     buf = io.BytesIO()
     spectrogram_image(y, sr).save(buf, format="PNG")

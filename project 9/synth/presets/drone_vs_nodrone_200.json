@@ -25,7 +25,8 @@
     "windows_per_clip": 1,
     "short_clips": "skip",
     "test_split": false,
-    "as_drone_background": true
+    "as_drone_background": true,
+    "drone_pairs": "off"
   },
   "include_real": false,
   "drone": {

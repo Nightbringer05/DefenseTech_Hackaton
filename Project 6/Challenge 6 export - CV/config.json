@@ -1,0 +1,21 @@
+{
+  "model": "RF-DETR Nano",
+  "weights": "inference_model.onnx",
+  "training": "base etendue : train du challenge + images synthetiques + Seraphim",
+  "input_size": 384,
+  "classes": ["drone_air", "airplane", "helicopter"],
+  "score_min": 0.05,
+  "max_dets": 100,
+  "nms_iou": 0.5,
+  "shrink_factor": 0.67,
+  "shrink_cutoff_px": 20,
+  "tracker": {
+    "high_thr": 0.6,
+    "low_thr": 0.05,
+    "match_iou": 0.1,
+    "low_match_iou": 0.3,
+    "track_buffer": 10,
+    "min_hits": 2,
+    "expand": 0.3
+  }
+}

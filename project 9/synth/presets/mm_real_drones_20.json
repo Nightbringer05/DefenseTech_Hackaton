@@ -1,0 +1,48 @@
+{
+  "_label": "Real drones (MM) ±MAD, 20 per class",
+  "_description": "Real drone recordings (Marzena Mięsikowska, drone_only, no voice) instead of synthetic drones. 20 MAD clips each for ambient_outdoor (footsteps), explosion (shelling) and vehicle_mechanical (vehicles), all no-drone. The same ambient and explosion windows again with a real drone over them (pairs; vehicles never get a drone). Plus 20 drone clips with no background.",
+  "name": "mm_real_drones_20",
+  "comment": "Real MM drone recordings (drone_only, no voice) with and without MAD background. 20 no-drone MAD clips per class (footsteps, shelling, vehicles); ambient and explosion clips also exported with a real drone over the same window; 20 drone-only clips. Drone over MAD at median SNR about -5 dB.",
+  "seed": 20,
+  "include_real": false,
+  "mad": {
+    "enabled": true,
+    "mapping": {
+      "0": "skip",
+      "1": "skip",
+      "2": "ambient_outdoor",
+      "3": "explosion",
+      "4": "vehicle_mechanical",
+      "5": "skip",
+      "6": "skip"
+    },
+    "max_per_label": 20,
+    "windows_per_clip": 1,
+    "short_clips": "skip",
+    "test_split": false,
+    "drone_pairs": "all"
+  },
+  "counts": {
+    "drone_buzz": 0,
+    "vehicle_mechanical": 0,
+    "explosion": 0,
+    "ambient_outdoor": 0
+  },
+  "clean_drone": 20,
+  "drone_free_twins": false,
+  "drone": {
+    "model": "recorded",
+    "recorded_dir": "Marzena_Miesikowska/drone_only"
+  },
+  "mix": {
+    "snr_db_at_30m": [
+      -5,
+      5
+    ],
+    "distance_db_per_decade": 10,
+    "snr_clip_db": [
+      -15,
+      10
+    ]
+  }
+}

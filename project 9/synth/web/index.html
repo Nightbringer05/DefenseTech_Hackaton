@@ -149,6 +149,7 @@ svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
 }
 @media (max-width:440px){.grid3{grid-template-columns:1fr 1fr}.prevrow{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.linkbtn{background:none;border:0;padding:0;color:var(--sig);text-decoration:underline;cursor:pointer;font:inherit}
 </style>
 </head>
 <body>
@@ -171,7 +172,7 @@ svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
       <fieldset>
         <legend>Preset</legend>
         <div class="presets" id="presets"></div>
-        <span class="hint">Presets from <code>synth/presets/*.json</code> come first. Spectrograms are made by <code id="specSrc">starter-kit/make_spectrogram.py</code>.</span>
+        <span class="hint">Your settings are saved in this browser and come back after a reload. <button type="button" class="linkbtn" id="resetCfg">Reset to defaults</button><br>Presets from <code>synth/presets/*.json</code> come first. Spectrograms are made by <code id="specSrc">starter-kit/make_spectrogram.py</code>.</span>
       </fieldset>
 
       <fieldset>
@@ -200,6 +201,8 @@ svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
         </div>
         <label class="check"><input type="checkbox" id="madTest" data-path="mad.test_split" data-type="bool"> Add MAD test as a held-out <code>mad_test/</code> split</label>
         <label class="check"><input type="checkbox" id="madBg" data-path="mad.as_drone_background" data-type="bool"> Use MAD recordings as backgrounds under synthetic drones</label>
+        <div class="field"><label for="dPairs">MAD clips with and without drone</label><select id="dPairs" data-path="mad.drone_pairs" data-type="str"><option value="off">Off: MAD clips only without drone</option><option value="ambient">ambient_outdoor clips: each also with a drone (&lt;id&gt;_drone)</option><option value="all">Every MAD clip except vehicle_mechanical: each also with a drone</option></select><span class="hint">The drone copy uses the same 5 s window and the same gain, labelled drone_buzz. Clips mapped to vehicle_mechanical never get a drone, and are never used as drone backgrounds.</span></div>
+        <label class="check"><input type="checkbox" id="twins" data-path="drone_free_twins" data-type="bool"> Also export each drone clip without the drone (<code>&lt;id&gt;_nodrone</code>: same background, same gain, labelled no-drone)</label>
       </fieldset>
 
       <fieldset>
@@ -225,6 +228,11 @@ svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
 
       <fieldset>
         <legend>Drone</legend>
+        <div class="grid3">
+          <div class="field"><label for="dModel">Drone sound source</label><select id="dModel" data-path="drone.model" data-type="str"><option value="simple">Simple synthetic model (fields below)</option><option value="physics">Physics model (airframe types)</option><option value="recorded">Real recordings (Marzena Mięsikowska, drone_only)</option></select></div>
+          <div class="field"><label for="dRecDir">Recordings folder</label><input id="dRecDir" type="text" data-path="drone.recorded_dir" data-type="str"><span class="hint">Relative to the folder holding MAD_dataset/. Voice files (<code>*sekwencja*</code>) are skipped.</span></div>
+          <div class="field"><label for="cClean">Drone clips without background</label><input id="cClean" type="number" min="0" step="10" data-path="clean_drone"><span class="hint">Drone only, no MAD noise. Labelled drone_buzz.</span></div>
+        </div>
         <p class="hint" id="physNote" hidden>This preset uses the physics drone model (airframe types set in the preset file). The fields below apply to the simple model.</p>
         <div class="grid3">
           <div class="field"><label for="rotors">Rotor counts</label><input id="rotors" type="text" data-path="drone.rotors" data-type="list"><span class="hint">Sampled from this list. Repeat a value to weight it.</span></div>
@@ -563,6 +571,10 @@ print(out.shape)   # (220500, 4)</pre>
   }
 
   let cfg = clone(DEFAULTS), server = false;
+  // builder settings survive reloads (per browser); presets and "Reset" overwrite them
+  const CFG_KEY = 'dronesynth.builder.cfg.v1';
+  const saveCfg = () => { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch {} };
+  const loadCfg = () => { try { const s = localStorage.getItem(CFG_KEY); return s ? JSON.parse(s) : null; } catch { return null; } };
   let fields = [];
   const CLS_OPTS = ['skip', 'drone_buzz', 'vehicle_mechanical', 'explosion', 'ambient_outdoor'];
   function buildMapTable() {
@@ -614,6 +626,8 @@ print(out.shape)   # (220500, 4)</pre>
         }).join('') || '<tr><td colspan="6" class="muted">Nothing to generate. Map at least one MAD label or add synthetic clips.</td></tr>';
         const mb = Math.round(e.total * 0.115);
         $('estHint').textContent = `${e.total.toLocaleString()} clips to render, about ${mb.toLocaleString()} MB of FLAC. ` +
+          (e.twins ? `Includes ${e.twins.toLocaleString()} drone-free twins (not in the table). ` : '') +
+          (e.mad_drone_pairs ? `${e.mad_drone_pairs.toLocaleString()} MAD clips also get a drone copy (in drone_buzz). ` : '') +
           (e.real_train ? `Plus ${e.real_train} real challenge train clips. ` : '') + `valid/ holds the ${e.valid} real challenge valid clips.`;
       } catch (x) { $('estHint').textContent = x.message; }
     }, 250);
@@ -634,6 +648,7 @@ print(out.shape)   # (220500, 4)</pre>
     return s;
   }
   function render() {
+    saveCfg();
     scheduleEstimate();
     if ($('physNote')) $('physNote').hidden = cfg.drone?.model !== 'physics';
     if (typeof syncBinary === 'function' && $('binNow')) try { syncBinary(); } catch {}
@@ -658,6 +673,10 @@ print(out.shape)   # (220500, 4)</pre>
     });
   }
   renderPresets();
+  $('resetCfg').addEventListener('click', () => {
+    cfg = clone(DEFAULTS); toForm(); syncBinary();
+    pBox.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', false));
+  });
 
   // ---- drone / no-drone helper: total + drone share -> drone count and MAD clips per label
   const mappedLabels = () => Object.entries(cfg.mad.mapping).filter(([, c]) => c !== 'skip').map(([id]) => id);
@@ -741,7 +760,7 @@ print(out.shape)   # (220500, 4)</pre>
     const pct = j.total ? Math.round(j.done / j.total * 100) : 0;
     $('jobBar').style.width = pct + '%';
     $('jobText').textContent = j.state === 'running' ? `Generating ${j.name}: ${j.done} of ${j.total} clips` :
-      j.state === 'done' ? `Generated ${j.name}: ${j.manifest.mad_clips} MAD + ${j.manifest.synthetic_clips} synthetic clips in ${j.manifest.seconds} s` : `Generation failed: ${j.error}`;
+      j.state === 'done' ? `Generated ${j.name}: ${j.manifest.mad_clips} MAD + ${j.manifest.synthetic_clips} synthetic` + (j.manifest.twin_clips ? ` + ${j.manifest.twin_clips} drone-free twin` : '') + (j.manifest.mad_drone_clips ? ` + ${j.manifest.mad_drone_clips} MAD+drone` : '') + ` clips in ${j.manifest.seconds} s` : `Generation failed: ${j.error}`;
     if (j.state !== 'running') {
       clearInterval(polling); $('genBtn').disabled = false;
       if (j.state === 'error') err(j.error);
@@ -777,6 +796,7 @@ print(out.shape)   # (220500, 4)</pre>
     try {
       const s = await api('/api/status');
       server = true; DEFAULTS = s.defaults; cfg = clone(DEFAULTS);
+      const saved = loadCfg(); if (saved) cfg = deepMerge(clone(DEFAULTS), saved);
       MAD_LABELS = s.mad_labels || MAD_LABELS; MAD_COUNTS = s.mad_counts || {};
       renderPresets(s.presets || []);
       $('specSrc').textContent = s.spectrogram_source || '';
@@ -790,6 +810,7 @@ print(out.shape)   # (220500, 4)</pre>
       $('status').textContent = 'Static mode: start python synth/server.py to generate from this page';
       $('status').className = 'status off';
       $('staticBox').hidden = false;
+      const saved = loadCfg(); if (saved) cfg = deepMerge(clone(DEFAULTS), saved);
     }
     toForm();
   })();

@@ -41,6 +41,9 @@ def main() -> None:
     ap.add_argument("--windows", type=int, help="5 s windows cut from each long MAD clip")
     ap.add_argument("--no-mad", action="store_true", help="synthetic only, don't use MAD_dataset")
     ap.add_argument("--no-real", action="store_true", help="don't copy the real train clips in")
+    ap.add_argument("--drone-pairs", choices=["off", "ambient", "all"],
+                    help="also export MAD clips with a synthetic drone over the same window")
+    ap.add_argument("--no-twins", action="store_true", help="don't export the drone-free twin of each drone clip")
     ap.add_argument("--out", type=Path, default=BASE / "out")
     ap.add_argument("--print-config", action="store_true")
     a = ap.parse_args()
@@ -63,6 +66,10 @@ def main() -> None:
         cfg["mad"]["windows_per_clip"] = a.windows
     if a.no_real:
         cfg["include_real"] = False
+    if a.drone_pairs:
+        cfg["mad"]["drone_pairs"] = a.drone_pairs
+    if a.no_twins:
+        cfg["drone_free_twins"] = False
     if a.print_config:
         print(json.dumps(cfg if user else DEFAULT_CONFIG, indent=2))
         return
@@ -79,7 +86,7 @@ def main() -> None:
     print(f"\nDone in {m['seconds']} s -> {a.out / m['name']}")
     for split, info in m["splits"].items():
         print(f"  {split:9s} {info['total']:6d}  {info['classes']}")
-    print(f"  sources: MAD {m['mad_clips']} | synthetic {m['synthetic_clips']} | challenge train {m['real_train_clips']}")
+    print(f"  sources: MAD {m['mad_clips']} | synthetic {m['synthetic_clips']} | drone-free twins {m.get('twin_clips', 0)} | MAD+drone {m.get('mad_drone_clips', 0)} | challenge train {m['real_train_clips']}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,32 @@
+Modele retenu : RF-DETR Nano, entraine sur la base etendue
+(train du challenge + images synthetiques + Seraphim).
+
+Ce dossier est autonome. Le fichier qui tourne sur le Raspberry Pi est
+inference_model.onnx. Les poids PyTorch ne sont pas inclus : ils ne
+servent pas a l'inference.
+
+Prerequis : Raspberry Pi OS 64 bits, Python 3.11 ou plus recent.
+Le paquet onnxruntime n'a pas de roue pour un systeme 32 bits.
+
+Installation, dans ce dossier :
+
+    python3 -m pip install -r requirements.txt
+
+Une image. Une seule image ne peut pas confirmer une piste (il en faut
+deux d'affilee), donc ce mode affiche les boites du detecteur :
+
+    python3 infer.py photo.jpg -o photo_boites.jpg
+
+Une video, avec les boites du tracker dessinees :
+
+    python3 infer.py video.mp4 -o sortie.mp4
+
+La camera du Pi :
+
+    python3 infer.py --camera 0 -o sortie.mp4
+
+Les reglages (seuil, retrecissement x0.67, ByteTrack) sont dans config.json.
+Ils sont ceux du pipeline retenu. L'image est etiree en 384x384, sans
+bandes noires. Les boites de moins de 20 px sont retrecies avant le tracker.
+La boite affichee est celle de la detection associee a la piste, pas la
+position du filtre de Kalman.

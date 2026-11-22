@@ -15,3 +15,13 @@ project 9/starter-kit/runs/
 project 9/starter-kit/ac_preds_*.jsonl
 project 9/starter-kit/kfold_cv.py
 project 9/starter-kit/uv.lock
+
+# Local audio / data (not for git)
+project 9/Marzena_Miesikowska/
+project 9/dataset_drone_vs_nodrone_200_old/
+project 9/test_clips/
+project 9/test_clips.zip
+
+# Project 6 local outputs; ONNX export is 102.7 MB (> GitHub's 100 MB file limit)
+Project 6/starter-kit/uv.lock
+Project 6/Challenge 6 export - CV/*.onnx
