@@ -1,0 +1,2633 @@
+{
+ "levels_db": [
+  10,
+  5,
+  0,
+  -5,
+  -10,
+  -15
+ ],
+ "seed": 7,
+ "units": [
+  {
+   "unit": 1,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-134802-A-13.wav",
+    "start": 0,
+    "recording": "esc50:134802"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001445/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001445"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 2,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/168/20.wav",
+    "start": 111,
+    "recording": "mad:4PEKmTKl11A"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001472/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001472"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 3,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/047/4.wav",
+    "start": 8111,
+    "recording": "mad:L7FcYHC-RRo"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0150/i075021.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0150"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 4,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-216370-A-41.wav",
+    "start": 0,
+    "recording": "esc50:216370"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001457/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001457"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 5,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/398/5.wav",
+    "start": 32000,
+    "recording": "mad:Oh4q6ck6ufc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001354/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001354"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 6,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/118/9.wav",
+    "start": 40000,
+    "recording": "mad:UdrQHl7TcAE"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0271/i135513.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0271"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 7,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-194892-A-10.wav",
+    "start": 0,
+    "recording": "esc50:194892"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001359/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001359"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 8,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "test/425/0.wav",
+    "start": 24000,
+    "recording": "mad:UccqNrFCZ4o"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0294/i147242.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0294"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 9,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/060/3.wav",
+    "start": 123,
+    "recording": "mad:IB3EV1mSeVE"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0236/i118282.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0236"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 10,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/038/3.wav",
+    "start": 8173,
+    "recording": "mad:FF1zoczVTMM"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001362/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001362"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 11,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/123/27.wav",
+    "start": 24000,
+    "recording": "mad:qcTmkKP_ku0"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001448/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001448"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 12,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/078/9.wav",
+    "start": 309,
+    "recording": "mad:y_R8QYskHXM"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001471/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001471"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 13,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-241846-A-15.wav",
+    "start": 0,
+    "recording": "esc50:241846"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001367/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001367"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 14,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/178/28.wav",
+    "start": 8297,
+    "recording": "mad:iQ0YtEUDPSo"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0237/i118887.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0237"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 15,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-175845-A-43.wav",
+    "start": 0,
+    "recording": "esc50:175845"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001451/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001451"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 16,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/381/1.wav",
+    "start": 24000,
+    "recording": "mad:zwy_D_jjY-Y"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001458/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001458"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 17,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/059/0.wav",
+    "start": 8000,
+    "recording": "mad:MTWdt5DB9k0"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0146/i073228.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0146"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 18,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/110/7.wav",
+    "start": 8111,
+    "recording": "mad:CG66Bv8EDoQ"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001532/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001532"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 19,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-76868-A-6.wav",
+    "start": 0,
+    "recording": "esc50:76868"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0004/i002399.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0004"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 20,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/177/11.wav",
+    "start": 8297,
+    "recording": "mad:qEALr2gytdo"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0045/i022673.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0045"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 21,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/390/0.wav",
+    "start": 0,
+    "recording": "mad:oDsFnGLC0tk"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0312/i156439.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0312"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 22,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/373/0.wav",
+    "start": 24000,
+    "recording": "mad:voG35HKw3c0"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0240/i120400.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0240"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 23,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/404/0.wav",
+    "start": 0,
+    "recording": "mad:c6UOxXUiAqU"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001365/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001365"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 24,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "test/245/6.wav",
+    "start": 0,
+    "recording": "mad:Gezu6A9zcLU"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0179/i089784.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0179"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 25,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/1-29561-A-10.wav",
+    "start": 0,
+    "recording": "esc50:29561"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001590/w015.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001590"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 26,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/315/7.wav",
+    "start": 40000,
+    "recording": "mad:ztTY9hp9zqM"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001463/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001463"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 27,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/289/13.wav",
+    "start": 8000,
+    "recording": "mad:7dXLfxQltjA"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001570/w020.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001570"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 28,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/037/9.wav",
+    "start": 40000,
+    "recording": "mad:lLEHgq_gmm4"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0270/i135155.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0270"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 29,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/337/0.wav",
+    "start": 8000,
+    "recording": "mad:EbFMJiHrhTQ"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0014/i007454.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0014"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 30,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/123/2.wav",
+    "start": 309,
+    "recording": "mad:qcTmkKP_ku0"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001468/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001468"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 31,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-250864-A-8.wav",
+    "start": 0,
+    "recording": "esc50:250864"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0193/i096944.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0193"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 32,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/277/10.wav",
+    "start": 16000,
+    "recording": "mad:xg4G6XIkrw8"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0149/i074876.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0149"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 33,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/453/0.wav",
+    "start": 8000,
+    "recording": "mad:-vKWiYx4tAk"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0177/i088848.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0177"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 34,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/217/17.wav",
+    "start": 40000,
+    "recording": "mad:kGnH-Jbmk44"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0010/i005429.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0010"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 35,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/1-160563-B-48.wav",
+    "start": 0,
+    "recording": "esc50:160563"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001369/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001369"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 36,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/175/9.wav",
+    "start": 40000,
+    "recording": "mad:NGegISC3jhU"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001573/w018.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001573"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 37,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-102852-A-11.wav",
+    "start": 0,
+    "recording": "esc50:102852"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001550/w010.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001550"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 38,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "test/151/16.wav",
+    "start": 0,
+    "recording": "mad:https://www.youtube.com/shorts/ie5cCtzcv6A"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001358/w008.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001358"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 39,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/286/9.wav",
+    "start": 40000,
+    "recording": "mad:0PqNuc4rgfc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0203/i101949.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0203"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 40,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/324/1.wav",
+    "start": 40000,
+    "recording": "mad:wzt0wPbXI80"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001558/w020.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001558"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 41,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/286/5.wav",
+    "start": 0,
+    "recording": "mad:0PqNuc4rgfc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001535/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001535"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 42,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/315/3.wav",
+    "start": 40000,
+    "recording": "mad:ztTY9hp9zqM"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0181/i090719.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0181"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 43,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-163607-A-13.wav",
+    "start": 0,
+    "recording": "esc50:163607"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001364/w016.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001364"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 44,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/269/3.wav",
+    "start": 8000,
+    "recording": "mad:uctRYVWEDFI"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001445/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001445"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 45,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/419/4.wav",
+    "start": 0,
+    "recording": "mad:EbFMJiHrhTQ"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001472/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001472"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 46,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-193480-A-40.wav",
+    "start": 0,
+    "recording": "esc50:193480"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001457/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001457"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 47,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/450/3.wav",
+    "start": 16000,
+    "recording": "mad:tJ9O6Y-1efE"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001354/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001354"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 48,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "test/151/17.wav",
+    "start": 8000,
+    "recording": "mad:https://www.youtube.com/shorts/ie5cCtzcv6A"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0271/i135695.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0271"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 49,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-122110-A-46.wav",
+    "start": 0,
+    "recording": "esc50:122110"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001359/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001359"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 50,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/136/21.wav",
+    "start": 8000,
+    "recording": "mad:hWXbQAt51Rc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0294/i147108.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0294"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 51,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/078/21.wav",
+    "start": 40000,
+    "recording": "mad:y_R8QYskHXM"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0236/i118483.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0236"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 52,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-193767-A-47.wav",
+    "start": 0,
+    "recording": "esc50:193767"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001362/w009.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001362"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 53,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/431/10.wav",
+    "start": 8000,
+    "recording": "mad:6LVnOe8NXDc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001448/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001448"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 54,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/032/5.wav",
+    "start": 40000,
+    "recording": "mad:G9G-NHyjD_Q"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001471/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001471"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 55,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-110614-A-8.wav",
+    "start": 0,
+    "recording": "esc50:110614"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001367/w004.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001367"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 56,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/248/13.wav",
+    "start": 32000,
+    "recording": "mad:2oyPGVoryaY"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0237/i118850.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0237"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 57,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "test/376/1.wav",
+    "start": 0,
+    "recording": "mad:YgO5EMgL32g"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001451/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001451"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 58,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-98866-A-47.wav",
+    "start": 0,
+    "recording": "esc50:98866"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001458/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001458"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 59,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/239/17.wav",
+    "start": 16000,
+    "recording": "mad:tjEkBIrfim0"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0146/i073085.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0146"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 60,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/136/40.wav",
+    "start": 32000,
+    "recording": "mad:hWXbQAt51Rc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001532/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001532"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 61,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-181955-C-3.wav",
+    "start": 0,
+    "recording": "esc50:181955"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0004/i002130.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0004"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 62,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/437/13.wav",
+    "start": 0,
+    "recording": "mad:dBHGWbfbuuk"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0045/i022897.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0045"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 63,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/398/7.wav",
+    "start": 8000,
+    "recording": "mad:Oh4q6ck6ufc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0312/i156109.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0312"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 64,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/074/0.wav",
+    "start": 16285,
+    "recording": "mad:JqU_i6DLCss"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0240/i120137.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0240"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 65,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/062/0.wav",
+    "start": 8000,
+    "recording": "mad:tt4QWONczhk"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001365/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001365"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 66,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/047/11.wav",
+    "start": 123,
+    "recording": "mad:L7FcYHC-RRo"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0179/i089904.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0179"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 67,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-144083-C-16.wav",
+    "start": 0,
+    "recording": "esc50:144083"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001590/w004.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001590"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 68,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/125/7.wav",
+    "start": 8111,
+    "recording": "mad:cvHwie5AI34"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001463/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001463"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 69,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "test/151/0.wav",
+    "start": 16285,
+    "recording": "mad:https://www.youtube.com/shorts/ie5cCtzcv6A"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001570/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001570"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 70,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-194680-A-36.wav",
+    "start": 0,
+    "recording": "esc50:194680"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0270/i135150.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0270"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 71,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/078/24.wav",
+    "start": 24000,
+    "recording": "mad:y_R8QYskHXM"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0014/i007184.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0014"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 72,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/178/9.wav",
+    "start": 123,
+    "recording": "mad:iQ0YtEUDPSo"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001468/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001468"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 73,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-171281-A-6.wav",
+    "start": 0,
+    "recording": "esc50:171281"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0193/i096849.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0193"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 74,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "test/245/15.wav",
+    "start": 16000,
+    "recording": "mad:Gezu6A9zcLU"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0177/i088504.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0177"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 75,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/239/0.wav",
+    "start": 0,
+    "recording": "mad:tjEkBIrfim0"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001369/w004.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001369"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 76,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-62878-A-42.wav",
+    "start": 0,
+    "recording": "esc50:62878"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001573/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001573"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 77,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/453/3.wav",
+    "start": 16000,
+    "recording": "mad:-vKWiYx4tAk"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001550/w020.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001550"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 78,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/005/2.wav",
+    "start": 123,
+    "recording": "mad:WNW3I8z6WBQ"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001358/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001358"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 79,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-254832-A-15.wav",
+    "start": 0,
+    "recording": "esc50:254832"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0203/i101721.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0203"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 80,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/123/17.wav",
+    "start": 32173,
+    "recording": "mad:qcTmkKP_ku0"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001558/w029.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001558"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 81,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/431/7.wav",
+    "start": 0,
+    "recording": "mad:6LVnOe8NXDc"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001535/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001535"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 82,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-177957-A-40.wav",
+    "start": 0,
+    "recording": "esc50:177957"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0181/i090590.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0181"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 83,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-160614-F-48.wav",
+    "start": 0,
+    "recording": "esc50:160614"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001364/w023.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001364"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 84,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/037/11.wav",
+    "start": 8297,
+    "recording": "mad:lLEHgq_gmm4"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001445/w000.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001445"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 85,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-257349-A-15.wav",
+    "start": 0,
+    "recording": "esc50:257349"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001472/w003.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001472"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 86,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "test/467/13.wav",
+    "start": 0,
+    "recording": "mad:XNbuRkeF1Yo"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001457/w002.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001457"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 87,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-135650-A-45.wav",
+    "start": 0,
+    "recording": "esc50:135650"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0271/i135885.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0271"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 88,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/177/2.wav",
+    "start": 40000,
+    "recording": "mad:qEALr2gytdo"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "pieces_0294/i147080.wav",
+    "start": 0,
+    "recording": "drone_real_drones:pieces_0294"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 89,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/012/5.wav",
+    "start": 8272,
+    "recording": "mad:b_7lC79pLFk"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001362/w012.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001362"
+   },
+   "drone_alone": true
+  },
+  {
+   "unit": 90,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/168/34.wav",
+    "start": 32000,
+    "recording": "mad:4PEKmTKl11A"
+   },
+   "drone": {
+    "root": "drones",
+    "path": "long_001448/w001.wav",
+    "start": 0,
+    "recording": "drone_real_drones:long_001448"
+   },
+   "drone_alone": false
+  },
+  {
+   "unit": 91,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-188716-A-46.wav",
+    "start": 0,
+    "recording": "esc50:188716"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 92,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/002/2.wav",
+    "start": 8260,
+    "recording": "mad:gRMz4ZEN4Bg"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 93,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/175/5.wav",
+    "start": 40000,
+    "recording": "mad:NGegISC3jhU"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 94,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/008/0.wav",
+    "start": 16099,
+    "recording": "mad:yN4ntVRfKFo"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 95,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/123/25.wav",
+    "start": 223,
+    "recording": "mad:qcTmkKP_ku0"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 96,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/074/6.wav",
+    "start": 8260,
+    "recording": "mad:JqU_i6DLCss"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 97,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-132852-A-10.wav",
+    "start": 0,
+    "recording": "esc50:132852"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 98,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/168/17.wav",
+    "start": 24025,
+    "recording": "mad:4PEKmTKl11A"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 99,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-186936-A-44.wav",
+    "start": 0,
+    "recording": "esc50:186936"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 100,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/318/1.wav",
+    "start": 40000,
+    "recording": "mad:hsgyj77hqnI"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 101,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/419/0.wav",
+    "start": 0,
+    "recording": "mad:EbFMJiHrhTQ"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 102,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/239/5.wav",
+    "start": 16000,
+    "recording": "mad:tjEkBIrfim0"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 103,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-163609-B-16.wav",
+    "start": 0,
+    "recording": "esc50:163609"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 104,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/178/5.wav",
+    "start": 309,
+    "recording": "mad:iQ0YtEUDPSo"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 105,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/1-61261-A-44.wav",
+    "start": 0,
+    "recording": "esc50:61261"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 106,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-102871-A-42.wav",
+    "start": 0,
+    "recording": "esc50:102871"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 107,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/1-160563-A-48.wav",
+    "start": 0,
+    "recording": "esc50:160563"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 108,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/002/0.wav",
+    "start": 40000,
+    "recording": "mad:gRMz4ZEN4Bg"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 109,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-155312-A-0.wav",
+    "start": 0,
+    "recording": "esc50:155312"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 110,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/177/14.wav",
+    "start": 0,
+    "recording": "mad:qEALr2gytdo"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 111,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-262579-A-45.wav",
+    "start": 0,
+    "recording": "esc50:262579"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 112,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/326/2.wav",
+    "start": 16000,
+    "recording": "mad:CgZlwaHqg7Q"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 113,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/286/11.wav",
+    "start": 32000,
+    "recording": "mad:0PqNuc4rgfc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 114,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/118/4.wav",
+    "start": 16075,
+    "recording": "mad:UdrQHl7TcAE"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 115,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/1-69641-A-3.wav",
+    "start": 0,
+    "recording": "esc50:69641"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 116,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/269/2.wav",
+    "start": 24000,
+    "recording": "mad:uctRYVWEDFI"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 117,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/443/4.wav",
+    "start": 0,
+    "recording": "mad:6l-MRyseO7U"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 118,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/1-100210-B-36.wav",
+    "start": 0,
+    "recording": "esc50:100210"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 119,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/450/1.wav",
+    "start": 8000,
+    "recording": "mad:tJ9O6Y-1efE"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 120,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/078/5.wav",
+    "start": 8297,
+    "recording": "mad:y_R8QYskHXM"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 121,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-106019-A-13.wav",
+    "start": 0,
+    "recording": "esc50:106019"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 122,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/136/30.wav",
+    "start": 32186,
+    "recording": "mad:hWXbQAt51Rc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 123,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-135649-C-45.wav",
+    "start": 0,
+    "recording": "esc50:135649"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 124,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/331/4.wav",
+    "start": 40000,
+    "recording": "mad:aNg22g4Tqaw"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 125,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/431/0.wav",
+    "start": 0,
+    "recording": "mad:6LVnOe8NXDc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 126,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/110/9.wav",
+    "start": 16099,
+    "recording": "mad:CG66Bv8EDoQ"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 127,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-82367-A-10.wav",
+    "start": 0,
+    "recording": "esc50:82367"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 128,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/248/22.wav",
+    "start": 32000,
+    "recording": "mad:2oyPGVoryaY"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 129,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/266/13.wav",
+    "start": 24000,
+    "recording": "mad:byomVAJNT_8"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 130,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/229/1.wav",
+    "start": 8000,
+    "recording": "mad:YZaG_wiYQs1"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 131,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/239/18.wav",
+    "start": 0,
+    "recording": "mad:tjEkBIrfim0"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 132,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "test/245/11.wav",
+    "start": 32000,
+    "recording": "mad:Gezu6A9zcLU"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 133,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-99955-B-7.wav",
+    "start": 0,
+    "recording": "esc50:99955"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 134,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/437/3.wav",
+    "start": 8000,
+    "recording": "mad:dBHGWbfbuuk"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 135,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/435/7.wav",
+    "start": 8000,
+    "recording": "mad:VDCLPUhNCi11"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 136,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/321/4.wav",
+    "start": 16000,
+    "recording": "mad:HFtfKh_bEY4"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 137,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/062/1.wav",
+    "start": 40000,
+    "recording": "mad:tt4QWONczhk"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 138,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/123/1.wav",
+    "start": 8111,
+    "recording": "mad:qcTmkKP_ku0"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 139,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-104632-A-12.wav",
+    "start": 0,
+    "recording": "esc50:104632"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 140,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/125/5.wav",
+    "start": 309,
+    "recording": "mad:cvHwie5AI34"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 141,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/012/3.wav",
+    "start": 40000,
+    "recording": "mad:b_7lC79pLFk"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 142,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-146200-A-36.wav",
+    "start": 0,
+    "recording": "esc50:146200"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 143,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/078/16.wav",
+    "start": 0,
+    "recording": "mad:y_R8QYskHXM"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 144,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/175/26.wav",
+    "start": 8111,
+    "recording": "mad:NGegISC3jhU"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 145,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-152039-A-3.wav",
+    "start": 0,
+    "recording": "esc50:152039"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 146,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/123/7.wav",
+    "start": 123,
+    "recording": "mad:qcTmkKP_ku0"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 147,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/331/1.wav",
+    "start": 8000,
+    "recording": "mad:aNg22g4Tqaw"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 148,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-208820-A-49.wav",
+    "start": 0,
+    "recording": "esc50:208820"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 149,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-160614-G-48.wav",
+    "start": 0,
+    "recording": "esc50:160614"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 150,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "test/151/13.wav",
+    "start": 74,
+    "recording": "mad:https://www.youtube.com/shorts/ie5cCtzcv6A"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 151,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/5-157204-B-16.wav",
+    "start": 0,
+    "recording": "esc50:157204"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 152,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "test/467/0.wav",
+    "start": 32000,
+    "recording": "mad:XNbuRkeF1Yo"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 153,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/390/16.wav",
+    "start": 0,
+    "recording": "mad:oDsFnGLC0tk"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 154,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/191/7.wav",
+    "start": 40000,
+    "recording": "mad:p3D6KUgZ1ns"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 155,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/012/6.wav",
+    "start": 16000,
+    "recording": "mad:b_7lC79pLFk"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 156,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/032/0.wav",
+    "start": 40000,
+    "recording": "mad:G9G-NHyjD_Q"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 157,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/3-157487-A-10.wav",
+    "start": 0,
+    "recording": "esc50:157487"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 158,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/269/4.wav",
+    "start": 24000,
+    "recording": "mad:uctRYVWEDFI"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 159,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/289/7.wav",
+    "start": 40000,
+    "recording": "mad:7dXLfxQltjA"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 160,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/032/1.wav",
+    "start": 24272,
+    "recording": "mad:G9G-NHyjD_Q"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 161,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/337/2.wav",
+    "start": 16000,
+    "recording": "mad:EbFMJiHrhTQ"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 162,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/136/35.wav",
+    "start": 32199,
+    "recording": "mad:hWXbQAt51Rc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 163,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/4-156827-A-46.wav",
+    "start": 0,
+    "recording": "esc50:156827"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 164,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/136/29.wav",
+    "start": 16237,
+    "recording": "mad:hWXbQAt51Rc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 165,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/453/2.wav",
+    "start": 40000,
+    "recording": "mad:-vKWiYx4tAk"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 166,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/364/1.wav",
+    "start": 8000,
+    "recording": "mad:K6wsRsgfXiw"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 167,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/286/16.wav",
+    "start": 0,
+    "recording": "mad:0PqNuc4rgfc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 168,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/047/1.wav",
+    "start": 8297,
+    "recording": "mad:L7FcYHC-RRo"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 169,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-52085-B-4.wav",
+    "start": 0,
+    "recording": "esc50:52085"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 170,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/248/48.wav",
+    "start": 0,
+    "recording": "mad:2oyPGVoryaY"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 171,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/286/3.wav",
+    "start": 40000,
+    "recording": "mad:0PqNuc4rgfc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 172,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "training/168/45.wav",
+    "start": 32000,
+    "recording": "mad:4PEKmTKl11A"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 173,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/450/2.wav",
+    "start": 8000,
+    "recording": "mad:tJ9O6Y-1efE"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 174,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/178/7.wav",
+    "start": 8272,
+    "recording": "mad:iQ0YtEUDPSo"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 175,
+   "noise_kind": "ambient",
+   "noise": {
+    "root": "esc50",
+    "path": "audio/2-39945-B-19.wav",
+    "start": 0,
+    "recording": "esc50:39945"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 176,
+   "noise_kind": "speech",
+   "noise": {
+    "root": "mad",
+    "path": "training/437/8.wav",
+    "start": 0,
+    "recording": "mad:dBHGWbfbuuk"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 177,
+   "noise_kind": "vehicle",
+   "noise": {
+    "root": "mad",
+    "path": "training/419/6.wav",
+    "start": 8000,
+    "recording": "mad:EbFMJiHrhTQ"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 178,
+   "noise_kind": "tonal_machine",
+   "noise": {
+    "root": "mad",
+    "path": "test/151/32.wav",
+    "start": 309,
+    "recording": "mad:https://www.youtube.com/shorts/ie5cCtzcv6A"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 179,
+   "noise_kind": "explosion",
+   "noise": {
+    "root": "mad",
+    "path": "training/431/5.wav",
+    "start": 0,
+    "recording": "mad:6LVnOe8NXDc"
+   },
+   "drone": null,
+   "drone_alone": false
+  },
+  {
+   "unit": 180,
+   "noise_kind": "gunfire",
+   "noise": {
+    "root": "mad",
+    "path": "training/037/10.wav",
+    "start": 32000,
+    "recording": "mad:lLEHgq_gmm4"
+   },
+   "drone": null,
+   "drone_alone": false
+  }
+ ],
+ "example_units": [
+  3,
+  6
+ ],
+ "preview_units": [
+  1,
+  3,
+  4,
+  6
+ ]
+}
